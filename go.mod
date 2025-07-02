@@ -3,13 +3,14 @@ module github.com/ternarybob/omnis
 go 1.24
 
 require (
-	github.com/ternarybob/funktion v1.0.0
-	github.com/ternarybob/satus v1.0.0
-	github.com/ternarybob/arbor v1.0.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-errors/errors v1.5.1
 	github.com/google/uuid v1.6.0
 	github.com/rs/zerolog v1.34.0
+	github.com/ternarybob/arbor v1.0.0
+	github.com/ternarybob/arcus/arbor v1.0.0
+	github.com/ternarybob/funktion v1.0.0
+	github.com/ternarybob/satus v1.0.0
 )
 
 require (
