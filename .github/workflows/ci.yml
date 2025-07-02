@@ -3,9 +3,10 @@ name: CI
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [published]
 
 env:
   GO_VERSION: '1.24'
@@ -33,9 +34,23 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
+      continue-on-error: true
           
-    - name: Download dependencies
-      run: go mod download
+    - name: Clean and download dependencies
+      run: |
+        # Clean module cache if there are issues
+        go clean -modcache || true
+        
+        # Download dependencies with proper error handling
+        if ! go mod download; then
+          echo "Error: Failed to download Go modules"
+          echo "Attempting to clean and retry..."
+          go clean -modcache
+          go mod download
+        fi
+        
+        # Verify modules are properly downloaded
+        go mod verify
       
     - name: Run tests
       run: go test -v ./...
@@ -45,14 +60,107 @@ jobs:
       
     - name: Check formatting
       run: |
-        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-          echo "The following files are not formatted:"
-          gofmt -s -l .
+        UNFORMATTED=$(gofmt -s -l .)
+        if [ -n "$UNFORMATTED" ]; then
+          echo "⚠️  The following files are not formatted properly:"
+          echo "$UNFORMATTED"
+          echo ""
+          echo "💡 To fix, run: gofmt -s -w ."
+          echo ""
+          echo "🔧 Showing formatting differences:"
+          gofmt -s -d .
           exit 1
+        else
+          echo "✅ All files are properly formatted"
         fi
         
     - name: Build
       run: go build ./...
+      
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Bump version and create tag
+      id: tag_version
+      uses: anothrNick/github-tag-action@1.70.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
+        DEFAULT_BUMP: patch
+        RELEASE_BRANCHES: main
+        TAG_CONTEXT: branch
+        DRY_RUN: false
+        PRERELEASE: false
+        VERBOSE: true
+        INITIAL_VERSION: 1.0.0
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: steps.tag_version.outputs.new_tag != ''
+      with:
+        tag_name: ${{ steps.tag_version.outputs.new_tag }}
+        name: Release ${{ steps.tag_version.outputs.new_tag }}
+        generate_release_notes: true
+        body: |
+          ## Release ${{ steps.tag_version.outputs.new_tag }}
+          
+          ### Installation
+          ```go
+          go get github.com/ternarybob/omnis@${{ steps.tag_version.outputs.new_tag }}
+          ```
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update config.yml with new version
+      run: |
+        # Get the latest tag (which was just created)
+        NEW_TAG=$(git tag --sort=-version:refname | head -1)
+        NEW_VERSION="${NEW_TAG#v}"
+        
+        echo "Updating config.yml to version: $NEW_VERSION"
+        
+        # Update config.yml
+        if ! sed -i "s/^  version: \".*\"/  version: \"$NEW_VERSION\"/" config.yml; then
+          echo "Error: Failed to update config.yml"
+          exit 1
+        fi
+        
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Check if there are changes to commit
+        if git diff --quiet config.yml; then
+          echo "No changes to config.yml - version already up to date"
+          exit 0
+        fi
+        
+        # Commit the config update
+        git add config.yml
+        if ! git commit -m "Update config.yml to version $NEW_VERSION [skip ci]"; then
+          echo "Error: Failed to commit config.yml changes"
+          exit 1
+        fi
+        
+        # Push changes
+        if ! git push origin main; then
+          echo "Error: Failed to push config.yml changes"
+          exit 1
+        fi
+        
+        echo "Successfully updated config.yml to version $NEW_VERSION"
 
   security:
     name: Security Scan
