@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
+	"github.com/ternarybob/arbor"
 )
 
 // TestDefaultLogger tests the default logger creation
@@ -26,7 +26,7 @@ func TestWarnLogger(t *testing.T) {
 		t.Error("Expected warn logger to be non-nil")
 	}
 
-	if logger.GetLevel() != zerolog.WarnLevel {
+	if logger.GetLevel() != arbor.WarnLevel {
 		t.Errorf("Expected warn logger to have level WarnLevel, got %v", logger.GetLevel())
 	}
 }

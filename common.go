@@ -3,8 +3,6 @@ package omnis
 import (
 	"github.com/ternarybob/arbor"
 	"github.com/ternarybob/satus"
-
-	"github.com/rs/zerolog"
 )
 
 const (
@@ -17,4 +15,4 @@ var (
 
 func defaultLogger() arbor.IConsoleLogger { return arbor.ConsoleLogger() }
 
-func warnLogger() arbor.IConsoleLogger { return arbor.ConsoleLogger().WithLevel(zerolog.WarnLevel) }
+func warnLogger() arbor.IConsoleLogger { return arbor.ConsoleLogger().WithLevel(arbor.WarnLevel) }

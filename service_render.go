@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
-	"github.com/rs/zerolog"
 )
 
 type renderservice struct {
@@ -136,10 +135,10 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 	if len(strings.TrimSpace(cid)) > 0 {
 
 		// Parse REST log level from configuration
-		restLogLevel, err := zerolog.ParseLevel(cfg.Service.RestLogLevel)
+		restLogLevel, err := arbor.ParseLevel(cfg.Service.RestLogLevel)
 		if err != nil {
 			log.Warn().Err(err).Msgf("Invalid REST log level '%s', defaulting to info", cfg.Service.RestLogLevel)
-			restLogLevel = zerolog.InfoLevel
+			restLogLevel = arbor.InfoLevel
 		}
 
 		// Get logs filtered by REST log level

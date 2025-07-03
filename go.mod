@@ -6,11 +6,10 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-errors/errors v1.5.1
 	github.com/google/uuid v1.6.0
-	github.com/rs/zerolog v1.34.0
-	github.com/ternarybob/arbor v1.0.0
+	github.com/ternarybob/arbor v1.3.3
 	github.com/ternarybob/arcus/arbor v1.0.0
-	github.com/ternarybob/funktion v1.0.0
-	github.com/ternarybob/satus v1.0.0
+	github.com/ternarybob/funktion v1.0.1
+	github.com/ternarybob/satus v1.0.5
 )
 
 require (
@@ -21,13 +20,13 @@ require (
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.26.0 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kkyr/fig v0.5.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.11 // indirect
 	github.com/labstack/echo/v4 v4.13.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -38,6 +37,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
