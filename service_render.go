@@ -122,9 +122,9 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	var (
 		loggerWithFunc = s.logger.WithFunction()
-		log           = loggerWithFunc.GetLogger()
-		logs          = make(map[string]string)
-		output        = make(map[string]string)
+		log            = loggerWithFunc.GetLogger()
+		logs           = make(map[string]string)
+		output         = make(map[string]string)
 	)
 
 	if s.ctx == nil {
