@@ -44,7 +44,8 @@ func (s renderservice) AsResult(code int, payload interface{}) {
 
 func (s renderservice) AsModel(code int, output interface{}) {
 
-	log := s.logger.WithFunction().GetLogger()
+	loggerWithFunc := s.logger.WithFunction()
+	log := loggerWithFunc.GetLogger()
 
 	apiresponse := s.getApiResponse(code)
 
@@ -120,9 +121,10 @@ func (s renderservice) respondwithJSON(code int, payload interface{}) {
 func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	var (
-		log    zerolog.Logger    = s.logger.WithFunction().GetLogger()
-		logs   map[string]string = make(map[string]string)
-		output map[string]string = make(map[string]string)
+		loggerWithFunc = s.logger.WithFunction()
+		log           = loggerWithFunc.GetLogger()
+		logs          = make(map[string]string)
+		output        = make(map[string]string)
 	)
 
 	if s.ctx == nil {
