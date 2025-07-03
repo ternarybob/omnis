@@ -13,12 +13,12 @@ func SetCorrelationID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Check if correlation ID already exists in context
 		correlationID := ctx.GetString(CORRELATION_ID_KEY)
-		
+
 		// If not in context, check for X-Correlation-ID header
 		if correlationID == "" {
 			correlationID = ctx.GetHeader("X-Correlation-ID")
 		}
-		
+
 		// If still empty, generate a new UUID
 		if correlationID == "" {
 			uuidValue, err := uuid.NewRandom()
@@ -29,14 +29,14 @@ func SetCorrelationID() gin.HandlerFunc {
 				correlationID = uuidValue.String()
 			}
 		}
-		
+
 		// Set correlation ID in context
 		ctx.Set(CORRELATION_ID_KEY, correlationID)
-		
+
 		// Set correlation ID in response headers (both formats for compatibility)
 		ctx.Header("X-Correlation-ID", correlationID)
 		ctx.Header(CORRELATION_ID_KEY, correlationID)
-		
+
 		// Continue to next middleware
 		ctx.Next()
 	}
@@ -48,23 +48,23 @@ func GetCorrelationID(c *gin.Context) string {
 	if c == nil {
 		return "unknown"
 	}
-	
+
 	correlationID := c.GetString(CORRELATION_ID_KEY)
 	if correlationID != "" {
 		return correlationID
 	}
-	
+
 	// Fallback: check headers
 	correlationID = c.GetHeader("X-Correlation-ID")
 	if correlationID != "" {
 		return correlationID
 	}
-	
+
 	correlationID = c.GetHeader(CORRELATION_ID_KEY)
 	if correlationID != "" {
 		return correlationID
 	}
-	
+
 	return "unknown"
 }
 
@@ -80,7 +80,7 @@ func GetCorrelationIDOrGenerate(c *gin.Context) string {
 		} else {
 			correlationID = uuidValue.String()
 		}
-		
+
 		// Set it in context and headers if context is available
 		if c != nil {
 			c.Set(CORRELATION_ID_KEY, correlationID)
