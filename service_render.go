@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/ternarybob/arbor"
-	"github.com/ternarybob/arcus/arbor/memorywriter"
+	"github.com/ternarybob/arbor/memorywriter"
 	"github.com/ternarybob/funktion"
 
 	"github.com/gin-gonic/gin"

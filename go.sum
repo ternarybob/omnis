@@ -70,6 +70,8 @@ github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaR
 github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
+github.com/phuslu/log v1.0.111 h1:H3FlEQL/w7BgXI2M27+nuXI6Tqmg4ceHaMnfPP6Boj0=
+github.com/phuslu/log v1.0.111/go.mod h1:F8osGJADo5qLK/0F88djWwdyoZZ9xDJQL1HYRHFEkS0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
@@ -88,10 +90,8 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569 h1:xzABM9let0HLLqFypcxvLmlvEciCHL7+Lv+4vwZqecI=
 github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569/go.mod h1:2Ly+NIftZN4de9zRmENdYbvPQeaVIYKWpLFStLFEBgI=
-github.com/ternarybob/arbor v1.3.3 h1:ElXIsvAbMV+SKhSz5InuBFOI0RmBpB/2YY9sQ1Ge52M=
-github.com/ternarybob/arbor v1.3.3/go.mod h1:OEa/QGaz/o70xGesbO3UrPn/4C4Ws7dxMIwfMrRuZOU=
-github.com/ternarybob/arcus/arbor v1.0.0 h1:gsIWDctlLN9VdWWajE5GV7yTLBEJXQs/FeQiYUMA8jk=
-github.com/ternarybob/arcus/arbor v1.0.0/go.mod h1:lXf3PTkaLhLzX7tDDKT1GzdXBlF9kMq34wcnul0nbW0=
+github.com/ternarybob/arbor v1.4.0 h1:ABtuNsIS/yzKQBwXCm8fh8kS+Zwo3Me8z4tsDk0KCzM=
+github.com/ternarybob/arbor v1.4.0/go.mod h1:aGfiCZE+d9V+S1lBL50yIkApGyuFKPDpIy3sY7oh35A=
 github.com/ternarybob/funktion v1.0.1 h1:HhzoHqnlDG/GKFD8UZQP2FoVJo2yL+ENY4kgYWmUjEY=
 github.com/ternarybob/funktion v1.0.1/go.mod h1:cearFH8tcJbxRMU4cduIEZLdZuQAP2OsvdsmqLgxk7w=
 github.com/ternarybob/satus v1.0.5 h1:f6t6yml4eQOYbAnrZU4HeXuNzy4xSVsmaSDYt6Vd+NE=

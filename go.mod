@@ -6,8 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-errors/errors v1.5.1
 	github.com/google/uuid v1.6.0
-	github.com/ternarybob/arbor v1.3.3
-	github.com/ternarybob/arcus/arbor v1.0.0
+	github.com/ternarybob/arbor v1.4.0
 	github.com/ternarybob/funktion v1.0.1
 	github.com/ternarybob/satus v1.0.5
 )
@@ -37,6 +36,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/phuslu/log v1.0.111 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
