@@ -137,14 +137,14 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 			logs["000"] = fmt.Sprintf("WRN|error retrieving logs %s", err)
 		}
 
-		// Add "no logs found" warning if no logs are present
-		if len(logs) == 0 {
-			logs["000"] = "WRN|No logs found for this request (memory logging may not be properly configured)"
-		}
-
 	} else {
 		// No correlation ID - add warning
 		logs["000"] = "WRN|No correlation ID found - memory logging unavailable"
+	}
+
+	// Add "no logs found" warning if no logs are present
+	if len(logs) == 0 {
+		logs["000"] = "WRN|No logs found for this request (memory logging may not be properly configured)"
 	}
 
 	if cfg.Service.Scope != "PRD" {
