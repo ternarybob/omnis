@@ -15,7 +15,7 @@ var (
 
 func StaticRequests(cfg *satus.AppConfig, e []string) gin.HandlerFunc {
 
-	log := warnLogger().WithFunction().GetLogger()
+	log := warnLogger()
 
 	return func(ctx *gin.Context) {
 

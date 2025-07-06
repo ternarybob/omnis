@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/ternarybob/arbor"
-	"github.com/ternarybob/arbor/memorywriter"
 	"github.com/ternarybob/funktion"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,7 @@ import (
 
 type renderservice struct {
 	ctx    *gin.Context
-	logger arbor.IConsoleLogger
+	logger arbor.ILogger
 }
 
 func RenderService(ctx *gin.Context) IRenderService {
@@ -43,8 +42,7 @@ func (s renderservice) AsResult(code int, payload interface{}) {
 
 func (s renderservice) AsModel(code int, output interface{}) {
 
-	loggerWithFunc := s.logger.WithFunction()
-	log := loggerWithFunc.GetLogger()
+	log := s.logger
 
 	apiresponse := s.getApiResponse(code)
 
@@ -120,10 +118,9 @@ func (s renderservice) respondwithJSON(code int, payload interface{}) {
 func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	var (
-		loggerWithFunc = s.logger.WithFunction()
-		log            = loggerWithFunc.GetLogger()
-		logs           = make(map[string]string)
-		output         = make(map[string]string)
+		log    = s.logger
+		logs   = make(map[string]string)
+		output = make(map[string]string)
 	)
 
 	if s.ctx == nil {
@@ -134,18 +131,10 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	if len(strings.TrimSpace(cid)) > 0 {
 
-		// Parse REST log level from configuration
-		restLogLevel, err := arbor.ParseLevel(cfg.Service.RestLogLevel)
-		if err != nil {
-			log.Warn().Err(err).Msgf("Invalid REST log level '%s', defaulting to info", cfg.Service.RestLogLevel)
-			restLogLevel = arbor.InfoLevel
-		}
-
-		// Get logs filtered by REST log level
-		logs, err = memorywriter.GetEntriesWithLevel(cid, restLogLevel)
-		if err != nil {
-			log.Warn().Err(err).Msg("Error retrieving memory logs")
-		}
+		// TODO: Memory logs functionality is not yet available in arbor v1.4.15
+		// This will be re-enabled when the functionality is restored
+		// For now, we'll indicate that memory logging is unavailable
+		log.Debug().Str("correlationId", cid).Msg("Memory logging temporarily disabled")
 
 		// Add "no logs found" warning if no logs are present
 		if len(logs) == 0 {

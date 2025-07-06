@@ -13,6 +13,6 @@ var (
 	cfg *satus.AppConfig = satus.GetAppConfig()
 )
 
-func defaultLogger() arbor.IConsoleLogger { return arbor.ConsoleLogger() }
+func defaultLogger() arbor.ILogger { return arbor.Logger() }
 
-func warnLogger() arbor.IConsoleLogger { return arbor.ConsoleLogger().WithLevel(arbor.WarnLevel) }
+func warnLogger() arbor.ILogger { return arbor.Logger().WithLevel(arbor.WarnLevel) }
