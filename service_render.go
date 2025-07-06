@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/ternarybob/arbor"
+	"github.com/ternarybob/arbor/levels"
 	"github.com/ternarybob/funktion"
 
 	"github.com/gin-gonic/gin"
@@ -131,10 +132,10 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	if len(strings.TrimSpace(cid)) > 0 {
 
-		// TODO: Memory logs functionality is not yet available in arbor v1.4.15
-		// This will be re-enabled when the functionality is restored
-		// For now, we'll indicate that memory logging is unavailable
-		log.Debug().Str("correlationId", cid).Msg("Memory logging temporarily disabled")
+		logs, err := log.GetMemoryLogs(cid, levels.DebugLevel)
+		if err != nil {
+			logs["000"] = fmt.Sprintf("WRN|error retrieving logs %s", err)
+		}
 
 		// Add "no logs found" warning if no logs are present
 		if len(logs) == 0 {
