@@ -250,7 +250,7 @@ func TestOmnisArborMemoryWriterWithCustomConfig(t *testing.T) {
 	// Custom configuration - note that memory writer config level filtering
 	// might not work the same way as other writers in the current implementation
 	config := models.WriterConfiguration{
-		Level:      log.WarnLevel, // Only warn and above
+		Level:      arbor.WarnLevel, // Only warn and above
 		TimeFormat: "2006-01-02 15:04:05",
 	}
 	logger := arbor.Logger().WithMemoryWriter(config).WithLevel(arbor.WarnLevel)
