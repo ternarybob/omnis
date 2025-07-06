@@ -8,13 +8,10 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/phuslu/log v1.0.111
 	github.com/stretchr/testify v1.10.0
-	github.com/ternarybob/arbor v1.4.15
-	github.com/ternarybob/funktion v1.0.1
-	github.com/ternarybob/satus v1.0.5
+	github.com/ternarybob/arbor v1.4.17
+	github.com/ternarybob/funktion v1.0.4
+	github.com/ternarybob/satus v1.0.8
 )
-
-// Use local development version of arbor
-replace github.com/ternarybob/arbor => ../arbor
 
 require (
 	github.com/bytedance/sonic v1.13.3 // indirect

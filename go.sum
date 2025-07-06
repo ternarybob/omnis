@@ -86,10 +86,12 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569 h1:xzABM9let0HLLqFypcxvLmlvEciCHL7+Lv+4vwZqecI=
 github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569/go.mod h1:2Ly+NIftZN4de9zRmENdYbvPQeaVIYKWpLFStLFEBgI=
-github.com/ternarybob/funktion v1.0.1 h1:HhzoHqnlDG/GKFD8UZQP2FoVJo2yL+ENY4kgYWmUjEY=
-github.com/ternarybob/funktion v1.0.1/go.mod h1:cearFH8tcJbxRMU4cduIEZLdZuQAP2OsvdsmqLgxk7w=
-github.com/ternarybob/satus v1.0.5 h1:f6t6yml4eQOYbAnrZU4HeXuNzy4xSVsmaSDYt6Vd+NE=
-github.com/ternarybob/satus v1.0.5/go.mod h1:wAKsIMLnWrYkNO1SNDrCO9gOHZ/GxgZWdqBDfi/A260=
+github.com/ternarybob/arbor v1.4.17 h1:+KbmqwADjEzAYzoZ696en7RvpsH7CgK+HAjVEeuxQag=
+github.com/ternarybob/arbor v1.4.17/go.mod h1:3/vkPFkW/2HPDKsHx+s3pbWHsnCbEmP15wqd7qF8qKk=
+github.com/ternarybob/funktion v1.0.4 h1:VR+w+AYnyUdl8qXF7JIDe7H/gH4M9yI2uYIJrUtmeUc=
+github.com/ternarybob/funktion v1.0.4/go.mod h1:cearFH8tcJbxRMU4cduIEZLdZuQAP2OsvdsmqLgxk7w=
+github.com/ternarybob/satus v1.0.8 h1:DhQbVXbvsy+hFcHSjgcD330ZFjLGx+rSCT4W8xsrYaY=
+github.com/ternarybob/satus v1.0.8/go.mod h1:wAKsIMLnWrYkNO1SNDrCO9gOHZ/GxgZWdqBDfi/A260=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.3.0 h1:Qd2W2sQawAfG8XSvzwhBeoGq71zXOC/Q1E9y/wUcsUA=
