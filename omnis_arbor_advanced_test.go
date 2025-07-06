@@ -92,7 +92,7 @@ func TestOmnisArborMemoryWriterMiddlewareChain(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	// Should have 4 log entries: request start, processing, completion, request finished
-	logs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.InfoLevel))
+	logs, err := logger.GetMemoryLogs(correlationID, arbor.InfoLevel)
 	require.NoError(t, err)
 	assert.Equal(t, 4, len(logs), "Expected 4 log entries from middleware chain")
 }
@@ -140,7 +140,7 @@ func TestOmnisArborMemoryWriterErrorHandling(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// Should have warning and error logs
-	logs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.WarnLevel))
+	logs, err := logger.GetMemoryLogs(correlationID, arbor.WarnLevel)
 	require.NoError(t, err)
 	assert.Equal(t, 2, len(logs), "Expected 2 log entries for error scenario")
 }
@@ -203,7 +203,7 @@ func TestOmnisArborMemoryWriterConcurrentRequests(t *testing.T) {
 
 	// Debug: Print all logs for each correlation ID to understand the issue
 	for i, cid := range correlationIDs {
-		logs, err := logger.GetMemoryLogs(cid, arbor.LogLevel(log.InfoLevel))
+		logs, err := logger.GetMemoryLogs(cid, arbor.InfoLevel)
 		require.NoError(t, err)
 		t.Logf("CID %d (%s) has %d logs:", i, cid, len(logs))
 		for logKey, logMessage := range logs {
@@ -213,7 +213,7 @@ func TestOmnisArborMemoryWriterConcurrentRequests(t *testing.T) {
 
 	// Verify each correlation ID has logs (be more lenient on exact count)
 	for i, cid := range correlationIDs {
-		logs, err := logger.GetMemoryLogs(cid, arbor.LogLevel(log.InfoLevel))
+		logs, err := logger.GetMemoryLogs(cid, arbor.InfoLevel)
 		require.NoError(t, err)
 		// Check that we have at least some logs for each correlation ID
 		assert.GreaterOrEqual(t, len(logs), 1, "Expected at least 1 log entry for concurrent request %d (CID: %s)", i, cid)
@@ -231,7 +231,7 @@ func TestOmnisArborMemoryWriterConcurrentRequests(t *testing.T) {
 	// Verify that we have logs for all correlation IDs
 	totalCIDSpecificLogs := 0
 	for _, cid := range correlationIDs {
-		logs, _ := logger.GetMemoryLogs(cid, arbor.LogLevel(log.InfoLevel))
+		logs, _ := logger.GetMemoryLogs(cid, arbor.InfoLevel)
 		for _, logMessage := range logs {
 			if strings.Contains(logMessage, cid) {
 				totalCIDSpecificLogs++
@@ -253,7 +253,7 @@ func TestOmnisArborMemoryWriterWithCustomConfig(t *testing.T) {
 		Level:      log.WarnLevel, // Only warn and above
 		TimeFormat: "2006-01-02 15:04:05",
 	}
-	logger := arbor.Logger().WithMemoryWriter(config).WithLevel(arbor.LogLevel(log.WarnLevel))
+	logger := arbor.Logger().WithMemoryWriter(config).WithLevel(arbor.WarnLevel)
 
 	r := gin.New()
 	r.Use(SetCorrelationID())
@@ -282,7 +282,7 @@ func TestOmnisArborMemoryWriterWithCustomConfig(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// Get all logs and check the actual behavior
-	allLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.DebugLevel))
+	allLogs, err := logger.GetMemoryLogs(correlationID, arbor.DebugLevel)
 	require.NoError(t, err)
 
 	// For now, let's be more flexible since level filtering might work differently
@@ -291,7 +291,7 @@ func TestOmnisArborMemoryWriterWithCustomConfig(t *testing.T) {
 	assert.LessOrEqual(t, len(allLogs), 4, "Expected at most 4 log entries")
 
 	// Test that we can retrieve with warn level filter
-	warnLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.WarnLevel))
+	warnLogs, err := logger.GetMemoryLogs(correlationID, arbor.WarnLevel)
 	require.NoError(t, err)
 	assert.GreaterOrEqual(t, len(warnLogs), 2, "Expected at least warn and error logs")
 }
@@ -366,11 +366,11 @@ func TestOmnisArborMemoryWriterRequestLifecycle(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 
 		// Should have info and debug logs, no error
-		allLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.DebugLevel))
+		allLogs, err := logger.GetMemoryLogs(correlationID, arbor.DebugLevel)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(allLogs), 3, "Expected at least 3 log entries for successful request")
 
-		errorLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.ErrorLevel))
+		errorLogs, err := logger.GetMemoryLogs(correlationID, arbor.ErrorLevel)
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(errorLogs), "Expected no error logs for successful request")
 	})
@@ -388,11 +388,11 @@ func TestOmnisArborMemoryWriterRequestLifecycle(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 
 		// Should have error logs due to failed status
-		errorLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.ErrorLevel))
+		errorLogs, err := logger.GetMemoryLogs(correlationID, arbor.ErrorLevel)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(errorLogs), "Expected 1 error log for failing request")
 
-		warnLogs, err := logger.GetMemoryLogs(correlationID, arbor.LogLevel(log.WarnLevel))
+		warnLogs, err := logger.GetMemoryLogs(correlationID, arbor.WarnLevel)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(warnLogs), 2, "Expected at least 2 warn+ logs for failing request")
 	})
@@ -443,15 +443,15 @@ func TestOmnisArborMemoryWriterLogRetrieval(t *testing.T) {
 		var level arbor.LogLevel
 		switch minLevel {
 		case "debug":
-			level = arbor.LogLevel(log.DebugLevel)
+			level = arbor.DebugLevel
 		case "info":
-			level = arbor.LogLevel(log.InfoLevel)
+			level = arbor.InfoLevel
 		case "warn":
-			level = arbor.LogLevel(log.WarnLevel)
+			level = arbor.WarnLevel
 		case "error":
-			level = arbor.LogLevel(log.ErrorLevel)
+			level = arbor.ErrorLevel
 		default:
-			level = arbor.LogLevel(log.InfoLevel)
+			level = arbor.InfoLevel
 		}
 
 		logs, err := logger.GetMemoryLogs(correlationId, level)

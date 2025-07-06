@@ -6,9 +6,9 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-errors/errors v1.5.1
 	github.com/google/uuid v1.6.0
-	github.com/phuslu/log v1.0.111
+	github.com/phuslu/log v1.0.118
 	github.com/stretchr/testify v1.10.0
-	github.com/ternarybob/arbor v1.4.17
+	github.com/ternarybob/arbor v1.4.19
 	github.com/ternarybob/funktion v1.0.4
 	github.com/ternarybob/satus v1.0.8
 )
@@ -52,3 +52,5 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/ternarybob/arbor => ../arbor
