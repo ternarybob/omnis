@@ -8,14 +8,14 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/phuslu/log v1.0.118
 	github.com/stretchr/testify v1.10.0
-	github.com/ternarybob/arbor v1.4.29
+	github.com/ternarybob/arbor v1.4.31
 	github.com/ternarybob/funktion v1.0.5
 	github.com/ternarybob/satus v1.0.11
 )
 
 require (
 	github.com/bytedance/sonic v1.13.3 // indirect
-	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
