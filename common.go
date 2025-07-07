@@ -1,18 +1,41 @@
 package omnis
 
 import (
-	"github.com/ternarybob/arbor"
+	"github.com/phuslu/log"
 	"github.com/ternarybob/satus"
 )
 
 const (
 	CORRELATION_ID_KEY string = "correlationid"
+	DEFAULT_TIMEFORMAT        = "01-02 15:04:05.000"
 )
 
 var (
 	cfg *satus.AppConfig = satus.GetAppConfig()
 )
 
-func defaultLogger() arbor.ILogger { return arbor.Logger() }
+func defaultLogger() log.Logger {
 
-func warnLogger() arbor.ILogger { return arbor.Logger().WithLevel(arbor.WarnLevel) }
+	return log.Logger{
+		Level:      log.DebugLevel,
+		TimeFormat: DEFAULT_TIMEFORMAT,
+		Writer: &log.ConsoleWriter{
+			ColorOutput:    true,
+			EndWithMessage: true,
+		},
+	}
+
+}
+
+func warnLogger() log.Logger {
+
+	return log.Logger{
+		Level:      log.WarnLevel,
+		TimeFormat: DEFAULT_TIMEFORMAT,
+		Writer: &log.ConsoleWriter{
+			ColorOutput:    true,
+			EndWithMessage: true,
+		},
+	}
+
+}

@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	"github.com/ternarybob/arbor"
-	"github.com/ternarybob/arbor/levels"
 	"github.com/ternarybob/funktion"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
+	"github.com/phuslu/log"
 )
 
 type renderservice struct {
-	ctx    *gin.Context
-	logger arbor.ILogger
+	ctx            *gin.Context
+	internalLogger log.Logger
 }
 
 func RenderService(ctx *gin.Context) IRenderService {
@@ -24,9 +24,12 @@ func RenderService(ctx *gin.Context) IRenderService {
 		panic(fmt.Errorf("Context is nil"))
 	}
 
+	logger := defaultLogger()
+	logger.Context = log.NewContext(nil).Str("function", "RenderService").Value()
+
 	return &renderservice{
-		ctx:    ctx,
-		logger: defaultLogger().WithPrefix("RenderService"),
+		ctx:            ctx,
+		internalLogger: logger,
 	}
 
 }
@@ -43,19 +46,17 @@ func (s renderservice) AsResult(code int, payload interface{}) {
 
 func (s renderservice) AsModel(code int, output interface{}) {
 
-	log := s.logger
-
 	apiresponse := s.getApiResponse(code)
 
 	// Combine Api and Input Payloads
 	apidata, err := json.Marshal(apiresponse)
 	if err != nil {
-		log.Warn().Msgf("Json Marshal err:%s", err.Error())
+		s.internalLogger.Warn().Msgf("Json Marshal err:%s", err.Error())
 		return
 	}
 
 	if err := json.Unmarshal(apidata, &output); err != nil {
-		log.Warn().Msgf("Json Marshal err:%s", err.Error())
+		s.internalLogger.Warn().Msgf("Json Marshal err:%s", err.Error())
 		return
 	}
 
@@ -119,7 +120,6 @@ func (s renderservice) respondwithJSON(code int, payload interface{}) {
 func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	var (
-		log    = s.logger
 		logs   = make(map[string]string)
 		output = make(map[string]string)
 	)
@@ -128,15 +128,19 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 		panic(fmt.Errorf("Context is nil"))
 	}
 
+	s.internalLogger.Context = log.NewContext(nil).Str("function", "getApiResponse").Value()
+
 	cid := s.getCorrelationID()
 
 	if len(strings.TrimSpace(cid)) > 0 {
-
-		logs, err := log.GetMemoryLogs(cid, levels.DebugLevel)
+		// Get the default logger and retrieve memory logs
+		logger := arbor.GetLogger()
+		retrievedLogs, err := logger.GetMemoryLogs(cid, arbor.DebugLevel)
 		if err != nil {
 			logs["000"] = fmt.Sprintf("WRN|error retrieving logs %s", err)
+		} else {
+			logs = retrievedLogs
 		}
-
 	} else {
 		// No correlation ID - add warning
 		logs["000"] = "WRN|No correlation ID found - memory logging unavailable"
@@ -144,7 +148,7 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	// Add "no logs found" warning if no logs are present
 	if len(logs) == 0 {
-		logs["000"] = "WRN|No logs found for this request (memory logging may not be properly configured)"
+		logs["000"] = fmt.Sprintf("WRN|No logs found for this request (memory logging may not be properly configured) CorrelationID:%s", cid)
 	}
 
 	if cfg.Service.Scope != "PRD" {

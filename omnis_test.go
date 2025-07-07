@@ -12,17 +12,22 @@ import (
 func TestDefaultLogger(t *testing.T) {
 	logger := defaultLogger()
 
-	if logger == nil {
-		t.Error("Expected default logger to be non-nil")
+	// Check that the logger is properly configured
+	if logger.Writer == nil {
+		t.Error("Expected default logger writer to be non-nil")
 	}
+	
+	// Test that logger can be used without panicking
+	logger.Info().Msg("Test default logger creation")
 }
 
 // TestWarnLogger tests the warning logger creation
 func TestWarnLogger(t *testing.T) {
 	logger := warnLogger()
 
-	if logger == nil {
-		t.Error("Expected warn logger to be non-nil")
+	// Check that the logger is properly configured
+	if logger.Writer == nil {
+		t.Error("Expected warn logger writer to be non-nil")
 	}
 
 	// Test that logger can be used (we can't directly check level in current interface)
