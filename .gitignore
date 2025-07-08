@@ -12,3 +12,13 @@ config.toml
 *.log
 log/
 log/.
+
+# data files
+*.db
+data/
+data/.
+
+# Test binary, built with `go test -c`
+*.test
+temp/
+temp/.
