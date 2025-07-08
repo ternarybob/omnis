@@ -16,7 +16,7 @@ func TestDefaultLogger(t *testing.T) {
 	if logger.Writer == nil {
 		t.Error("Expected default logger writer to be non-nil")
 	}
-	
+
 	// Test that logger can be used without panicking
 	logger.Info().Msg("Test default logger creation")
 }

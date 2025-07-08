@@ -16,7 +16,6 @@ var (
 func StaticRequests(cfg *satus.AppConfig, e []string) gin.HandlerFunc {
 
 	log := defaultLogger()
-	
 
 	return func(ctx *gin.Context) {
 
