@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/phuslu/log v1.0.118
 	github.com/stretchr/testify v1.10.0
-	github.com/ternarybob/arbor v1.4.32
+	github.com/ternarybob/arbor v1.4.36
 	github.com/ternarybob/funktion v1.0.5
 	github.com/ternarybob/satus v1.0.11
 )
