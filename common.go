@@ -2,6 +2,8 @@ package omnis
 
 import (
 	"github.com/phuslu/log"
+	"github.com/ternarybob/arbor"
+	"github.com/ternarybob/arbor/models"
 	"github.com/ternarybob/satus"
 )
 
@@ -14,8 +16,17 @@ var (
 	cfg *satus.AppConfig = satus.GetAppConfig()
 )
 
-func defaultLogger() log.Logger {
+// getArborLogger returns a configured arbor logger using satus configuration
+func getArborLogger() arbor.ILogger {
+	return arbor.Logger().
+		WithConsoleWriter(models.WriterConfiguration{
+			Type: models.LogWriterTypeConsole,
+		}).
+		WithLevelFromString(satus.GetLogLevel()).
+		WithPrefix("omnis")
+}
 
+func defaultLogger() log.Logger {
 	return log.Logger{
 		Level:      log.DebugLevel,
 		TimeFormat: DEFAULT_TIMEFORMAT,
@@ -24,11 +35,9 @@ func defaultLogger() log.Logger {
 			EndWithMessage: true,
 		},
 	}
-
 }
 
 func warnLogger() log.Logger {
-
 	return log.Logger{
 		Level:      log.WarnLevel,
 		TimeFormat: DEFAULT_TIMEFORMAT,
@@ -37,5 +46,4 @@ func warnLogger() log.Logger {
 			EndWithMessage: true,
 		},
 	}
-
 }
