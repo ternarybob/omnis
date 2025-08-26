@@ -1,3 +1,8 @@
+// -----------------------------------------------------------------------
+// Last Modified: Tuesday, 26th August 2025 11:31:49 pm
+// Modified By: Bob McAllan
+// -----------------------------------------------------------------------
+
 package omnis
 
 import (
@@ -13,10 +18,18 @@ import (
 	"github.com/phuslu/log"
 )
 
+// ServiceConfig holds application configuration
+type ServiceConfig struct {
+	Version string
+	Name    string
+	Scope   string
+}
+
 type renderservice struct {
 	ctx            *gin.Context
 	internalLogger log.Logger
 	logger         arbor.ILogger
+	config         *ServiceConfig
 }
 
 func RenderService(ctx *gin.Context) IRenderService {
@@ -37,6 +50,11 @@ func RenderService(ctx *gin.Context) IRenderService {
 
 func (s *renderservice) WithLogger(logger arbor.ILogger) IRenderService {
 	s.logger = logger
+	return s
+}
+
+func (s *renderservice) WithConfig(config *ServiceConfig) IRenderService {
+	s.config = config
 	return s
 }
 
@@ -75,7 +93,7 @@ func (s renderservice) AsResultWithError(code int, payload interface{}, err erro
 
 	output.Result = payload
 
-	if err != nil && cfg.Service.Scope == "DEV" {
+	if err != nil && s.getScope() == "DEV" {
 
 		goerr := errors.Wrap(err, 3)
 
@@ -92,7 +110,7 @@ func (s renderservice) AsError(code int, err interface{}) {
 
 	output := s.getApiResponse(code)
 
-	if err != nil && cfg.Service.Scope == "DEV" {
+	if err != nil && s.getScope() == "DEV" {
 
 		goerr := errors.Wrap(err, 3)
 
@@ -113,7 +131,7 @@ func (s renderservice) respondwithJSON(code int, payload interface{}) {
 
 	s.ctx.Header("Content-Type", "application/json")
 
-	if strings.ToUpper(cfg.Service.Scope) == "DEV" {
+	if strings.ToUpper(s.getScope()) == "DEV" {
 		s.ctx.IndentedJSON(code, payload)
 		return
 
@@ -146,7 +164,7 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 		} else {
 			loggerToUse = arbor.GetLogger()
 		}
-		
+
 		retrievedLogs, err := loggerToUse.GetMemoryLogs(cid, arbor.DebugLevel)
 		if err != nil {
 			logs["000"] = fmt.Sprintf("WRN|error retrieving logs %s", err)
@@ -163,7 +181,7 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 		logs["000"] = fmt.Sprintf("WRN|No logs found for this request (memory logging may not be properly configured) CorrelationID:%s", cid)
 	}
 
-	if cfg.Service.Scope != "PRD" {
+	if s.getScope() != "PRD" {
 		output["url"] = s.ctx.FullPath()
 
 		// Param
@@ -183,10 +201,9 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 	}
 
 	return &ApiResponse{
-		Version:       cfg.Service.Version,
-		Support:       cfg.Service.Support,
-		Name:          cfg.Service.Name,
-		Scope:         cfg.Service.Scope,
+		Version:       s.getVersion(),
+		Name:          s.getName(),
+		Scope:         s.getScope(),
 		Request:       output,
 		Status:        code,
 		CorrelationId: cid,
@@ -197,4 +214,26 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 func (s renderservice) getCorrelationID() string {
 	return GetCorrelationID(s.ctx)
+}
+
+// Configuration helper methods with defaults
+func (s *renderservice) getVersion() string {
+	if s.config != nil && s.config.Version != "" {
+		return s.config.Version
+	}
+	return "1.0.0"
+}
+
+func (s *renderservice) getName() string {
+	if s.config != nil && s.config.Name != "" {
+		return s.config.Name
+	}
+	return "omnis-service"
+}
+
+func (s *renderservice) getScope() string {
+	if s.config != nil && s.config.Scope != "" {
+		return s.config.Scope
+	}
+	return "DEV"
 }

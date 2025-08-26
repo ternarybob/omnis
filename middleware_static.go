@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/ternarybob/funktion"
-	"github.com/ternarybob/satus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ var (
 	defaultExceptions []string = []string{"static/", "fav.ico", "favicon.ico", ".ico"}
 )
 
-func StaticRequests(cfg *satus.AppConfig, e []string) gin.HandlerFunc {
+func StaticRequests(config *ServiceConfig, e []string) gin.HandlerFunc {
 
 	log := defaultLogger()
 
@@ -26,7 +25,12 @@ func StaticRequests(cfg *satus.AppConfig, e []string) gin.HandlerFunc {
 			log.Trace().Msgf("Static Content")
 			log.Trace().Msgf("path:%s contains:%t", ctx.FullPath(), funktion.ArrayContains(requestExceptions, ctx.FullPath()))
 
-			if cfg.Service.Scope == "DEV" {
+			scope := "DEV"
+			if config != nil && config.Scope != "" {
+				scope = config.Scope
+			}
+
+			if scope == "DEV" {
 				ctx.Header("Expires", time.Now().Add(time.Minute*-1).Format(time.RFC3339))
 			}
 

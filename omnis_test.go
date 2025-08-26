@@ -1,3 +1,8 @@
+// -----------------------------------------------------------------------
+// Last Modified: Tuesday, 26th August 2025 11:32:39 pm
+// Modified By: Bob McAllan
+// -----------------------------------------------------------------------
+
 package omnis
 
 import (
@@ -73,9 +78,15 @@ func TestConstants(t *testing.T) {
 	}
 }
 
-// TestConfig tests that config is initialized
-func TestConfigInitialization(t *testing.T) {
-	if cfg == nil {
-		t.Error("Expected config to be initialized")
+// TestServiceConfig tests that service config can be created
+func TestServiceConfigCreation(t *testing.T) {
+	config := &ServiceConfig{
+		Version: "1.0.0",
+		Name:    "test-service",
+		Scope:   "DEV",
+	}
+
+	if config.Version != "1.0.0" {
+		t.Error("Expected version to be set correctly")
 	}
 }

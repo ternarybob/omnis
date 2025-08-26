@@ -4,7 +4,6 @@ import (
 	"github.com/phuslu/log"
 	"github.com/ternarybob/arbor"
 	"github.com/ternarybob/arbor/models"
-	"github.com/ternarybob/satus"
 )
 
 const (
@@ -12,17 +11,15 @@ const (
 	DEFAULT_TIMEFORMAT        = "01-02 15:04:05.000"
 )
 
-var (
-	cfg *satus.AppConfig = satus.GetAppConfig()
-)
+// Removed satus dependency - configuration now handled directly in components that need it
 
-// getArborLogger returns a configured arbor logger using satus configuration
+// getArborLogger returns a configured arbor logger with default settings
 func getArborLogger() arbor.ILogger {
 	return arbor.Logger().
 		WithConsoleWriter(models.WriterConfiguration{
 			Type: models.LogWriterTypeConsole,
 		}).
-		WithLevelFromString(satus.GetLogLevel()).
+		WithLevelFromString("info").
 		WithPrefix("omnis")
 }
 

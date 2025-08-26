@@ -8,4 +8,5 @@ type IRenderService interface {
 	AsResultWithError(code int, payload interface{}, err error)
 	AsError(code int, err interface{})
 	WithLogger(logger arbor.ILogger) IRenderService
+	WithConfig(config *ServiceConfig) IRenderService
 }

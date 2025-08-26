@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Read(/C:\\development\\pexa\\pexa-mock-api\\src\\common/**)",
-      "Read(/C:\\development\\ternarybob\\arbor\\writers/**)"
+      "Read(/C:\\development\\ternarybob\\arbor\\writers/**)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)",
+      "Bash(go list:*)",
+      "Bash(go mod:*)",
+      "Bash(go test:*)",
+      "Bash(go doc:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

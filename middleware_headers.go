@@ -3,19 +3,29 @@ package omnis
 import (
 	"fmt"
 
-	"github.com/ternarybob/satus"
-
 	"github.com/gin-gonic/gin"
 )
 
-func SetHeaders(cfg *satus.AppConfig) gin.HandlerFunc {
+func SetHeaders(config *ServiceConfig) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
 		// ctx.Header("content-type", "application/json")
 
-		ctx.Header("x-t3b-app", fmt.Sprintf("app:%s", cfg.Service.Name))
-		ctx.Header("x-t3b-version", fmt.Sprintf("version:%s", cfg.Service.Version))
+		name := "omnis-service"
+		version := "1.0.0"
+		
+		if config != nil {
+			if config.Name != "" {
+				name = config.Name
+			}
+			if config.Version != "" {
+				version = config.Version
+			}
+		}
+
+		ctx.Header("x-t3b-app", fmt.Sprintf("app:%s", name))
+		ctx.Header("x-t3b-version", fmt.Sprintf("version:%s", version))
 
 		ctx.Next()
 	}
