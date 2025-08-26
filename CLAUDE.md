@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Core Principles
+
+### Code Quality Standards
+- **Single Responsibility**: Functions do one thing well
+- **Clear Naming**: Descriptive, intention-revealing names
+- **Function Size**: Maximum 80 lines, ideally 20-40
+- **Error Handling**: Comprehensive validation and error management
+- **No Dead Code**: Remove unused imports, variables, functions
+
+### Professional Output
+- **Human-Authored Appearance**: No AI attribution or generation markers
+- **Production Ready**: Code passes enterprise review standards
+- **Clean Architecture**: Follow SOLID principles and design patterns
+- **Consistent Style**: Language-specific conventions and formatting
+
 ## Development Commands
 
 ### Build and Test

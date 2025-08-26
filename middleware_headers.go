@@ -14,7 +14,7 @@ func SetHeaders(config *ServiceConfig) gin.HandlerFunc {
 
 		name := "omnis-service"
 		version := "1.0.0"
-		
+
 		if config != nil {
 			if config.Name != "" {
 				name = config.Name
