@@ -16,6 +16,7 @@ import (
 type renderservice struct {
 	ctx            *gin.Context
 	internalLogger log.Logger
+	logger         arbor.ILogger
 }
 
 func RenderService(ctx *gin.Context) IRenderService {
@@ -32,6 +33,11 @@ func RenderService(ctx *gin.Context) IRenderService {
 		internalLogger: logger,
 	}
 
+}
+
+func (s *renderservice) WithLogger(logger arbor.ILogger) IRenderService {
+	s.logger = logger
+	return s
 }
 
 func (s renderservice) AsResult(code int, payload interface{}) {
@@ -133,9 +139,15 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 	cid := s.getCorrelationID()
 
 	if len(strings.TrimSpace(cid)) > 0 {
-		// Get the default logger and retrieve memory logs
-		logger := arbor.GetLogger()
-		retrievedLogs, err := logger.GetMemoryLogs(cid, arbor.DebugLevel)
+		// Use provided logger if available, otherwise fall back to default
+		var loggerToUse arbor.ILogger
+		if s.logger != nil {
+			loggerToUse = s.logger
+		} else {
+			loggerToUse = arbor.GetLogger()
+		}
+		
+		retrievedLogs, err := loggerToUse.GetMemoryLogs(cid, arbor.DebugLevel)
 		if err != nil {
 			logs["000"] = fmt.Sprintf("WRN|error retrieving logs %s", err)
 		} else {

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\development\\pexa\\pexa-mock-api\\src\\common/**)",
+      "Read(/C:\\development\\ternarybob\\arbor\\writers/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
