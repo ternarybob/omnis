@@ -1,27 +1,18 @@
+// -----------------------------------------------------------------------
+// Last Modified: Wednesday, 27th August 2025 8:41:32 am
+// Modified By: Bob McAllan
+// -----------------------------------------------------------------------
+
 package omnis
 
 import (
 	"github.com/phuslu/log"
-	"github.com/ternarybob/arbor"
-	"github.com/ternarybob/arbor/models"
 )
 
 const (
 	CORRELATION_ID_KEY string = "correlationid"
-	DEFAULT_TIMEFORMAT        = "01-02 15:04:05.000"
+	DEFAULT_TIMEFORMAT string = "01-02 15:04:05.000"
 )
-
-// Removed satus dependency - configuration now handled directly in components that need it
-
-// getArborLogger returns a configured arbor logger with default settings
-func getArborLogger() arbor.ILogger {
-	return arbor.Logger().
-		WithConsoleWriter(models.WriterConfiguration{
-			Type: models.LogWriterTypeConsole,
-		}).
-		WithLevelFromString("info").
-		WithPrefix("omnis")
-}
 
 func defaultLogger() log.Logger {
 	return log.Logger{

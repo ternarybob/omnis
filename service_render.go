@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// Last Modified: Tuesday, 26th August 2025 11:31:49 pm
+// Last Modified: Wednesday, 27th August 2025 8:40:53 am
 // Modified By: Bob McAllan
 // -----------------------------------------------------------------------
 
@@ -17,13 +17,6 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/phuslu/log"
 )
-
-// ServiceConfig holds application configuration
-type ServiceConfig struct {
-	Version string
-	Name    string
-	Scope   string
-}
 
 type renderservice struct {
 	ctx            *gin.Context
