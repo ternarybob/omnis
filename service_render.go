@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// Last Modified: Wednesday, 27th August 2025 8:40:53 am
+// Last Modified: Wednesday, 27th August 2025 8:49:17 am
 // Modified By: Bob McAllan
 // -----------------------------------------------------------------------
 
@@ -8,7 +8,9 @@ package omnis
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ternarybob/arbor"
 	"github.com/ternarybob/funktion"
@@ -211,10 +213,16 @@ func (s renderservice) getCorrelationID() string {
 
 // Configuration helper methods with defaults
 func (s *renderservice) getVersion() string {
+	baseVersion := "1.0.0"
 	if s.config != nil && s.config.Version != "" {
-		return s.config.Version
+		baseVersion = s.config.Version
 	}
-	return "1.0.0"
+	
+	// Add build information: version+build.goversion.timestamp
+	buildTime := time.Now().Format("20060102.150405")
+	goVersion := runtime.Version()
+	
+	return fmt.Sprintf("%s+build.%s.%s", baseVersion, goVersion, buildTime)
 }
 
 func (s *renderservice) getName() string {
