@@ -71,8 +71,11 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	// Check if this is a JSON response
 	contentType := w.Header().Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
+		// Debug log to see what content types we're skipping
+		fmt.Printf("[DEBUG] Skipping non-JSON content-type: %s\n", contentType)
 		return w.ResponseWriter.Write(data)
 	}
+	fmt.Printf("[DEBUG] Processing JSON response, content-type: %s\n", contentType)
 
 	w.written = true
 
@@ -84,9 +87,13 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 		}
 	}
 
-	// Fall back to default logger if available
+	// Track if we're using request logger vs default logger
+	usingRequestLogger := logger != nil
+
+	// Fall back to default logger if available (but mark as not using request logger)
 	if logger == nil && w.config != nil {
 		logger = w.config.DefaultLogger
+		// Keep usingRequestLogger as false since we're using default
 	}
 
 	// If no logger available at all, skip processing and pass through
@@ -96,7 +103,7 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	}
 
 	// Log the response
-	logger.Debug().
+	logger.Info().
 		Int("status_code", w.context.Writer.Status()).
 		Str("response_size", fmt.Sprintf("%d bytes", len(data))).
 		Msg("JSON response intercepted")
@@ -150,9 +157,16 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	}
 
 	// Get correlation ID from context
-	if correlationID, exists := w.context.Get("correlation-id"); exists {
+	if correlationID, exists := w.context.Get(CORRELATION_ID_KEY); exists {
 		if id, ok := correlationID.(string); ok {
 			apiResponse.CorrelationId = id
+		}
+	}
+
+	// Add log entry indicating no logs found if no request logger was set
+	if !usingRequestLogger {
+		apiResponse.Log = map[string]string{
+			"status": "no logs found - request logger not set",
 		}
 	}
 
