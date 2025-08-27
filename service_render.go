@@ -217,11 +217,11 @@ func (s *renderservice) getVersion() string {
 	if s.config != nil && s.config.Version != "" {
 		baseVersion = s.config.Version
 	}
-	
+
 	// Add build information: version+build.goversion.timestamp
 	buildTime := time.Now().Format("20060102.150405")
 	goVersion := runtime.Version()
-	
+
 	return fmt.Sprintf("%s+build.%s.%s", baseVersion, goVersion, buildTime)
 }
 
