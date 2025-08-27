@@ -1,37 +1,22 @@
 // -----------------------------------------------------------------------
-// Last Modified: Wednesday, 27th August 2025 12:58:20 pm
-// Modified By: Bob McAllan
+// API Response Model
+// Minimal response structure for middleware use only
 // -----------------------------------------------------------------------
 
 package omnis
 
+// ApiResponse represents the structured API response format (minimal version)
 type ApiResponse struct {
-	Version       string            `json:"version"`
-	Build         string            `json:"build"`
-	Name          string            `json:"name"`
-	Status        int               `json:"status"`
-	Scope         string            `json:"scope"`
-	CorrelationId string            `json:"correlationid"`
-	Err           string            `json:"error,omitempty"`
-	Request       map[string]string `json:"request,omitempty"`
-	Log           map[string]string `json:"log,omitempty"`
-	Result        interface{}       `json:"result"`
-}
-
-type ApiTypedResponse[T any] struct {
-	ApiResponse
-	Result T `json:"result"`
-}
-
-type ApiPagedResult[T any] struct {
-	Total    int   `json:"total"`
-	Page     int   `json:"page"`
-	Size     int   `json:"size"`
-	Duration int64 `json:"duration"`
-	Data     []*T  `json:"data"`
-}
-
-type ApiPagedResponse[T any] struct {
-	ApiResponse
-	Result ApiPagedResult[T] `json:"result"`
+	Version       string                 `json:"version,omitempty"`
+	Build         string                 `json:"build,omitempty"`
+	Name          string                 `json:"name,omitempty"`
+	Support       string                 `json:"support,omitempty"`
+	Status        int                    `json:"status"`
+	Scope         string                 `json:"scope,omitempty"`
+	CorrelationId string                 `json:"correlationid,omitempty"`
+	Result        interface{}            `json:"result,omitempty"`
+	Error         string                 `json:"error,omitempty"`
+	Stack         []string               `json:"stack,omitempty"`
+	Request       map[string]interface{} `json:"request,omitempty"`
+	Log           map[string]string      `json:"log,omitempty"`
 }

@@ -156,7 +156,7 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	if errResp, ok := jsonData.(map[string]interface{}); ok {
 		if errMsg, hasError := errResp["error"]; hasError {
 			// Move error to the error field and clear result
-			apiResponse.Err = fmt.Sprintf("%v", errMsg)
+			apiResponse.Error = fmt.Sprintf("%v", errMsg)
 			apiResponse.Result = nil
 		}
 	}
@@ -192,11 +192,6 @@ func (w *jsonResponseInterceptor) isDevelopmentMode() bool {
 	return scope == "" || scope == "DEV" || scope == "DEVELOPMENT"
 }
 
-// WithLogger stores a logger in the context for the JSON interceptor to use
-// Usage: omnis.WithLogger(c, logger) followed by c.JSON(200, data)
-func WithLogger(c *gin.Context, logger arbor.ILogger) {
-	c.Set("request_logger", logger)
-}
 
 // JSONMiddlewareWithDefaults creates middleware with default configuration
 // Usage: router.Use(omnis.JSONMiddlewareWithDefaults())
