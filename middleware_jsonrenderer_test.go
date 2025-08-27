@@ -27,7 +27,7 @@ func TestJSONRenderer(t *testing.T) {
 			Version: "1.0.0",
 			Scope:   "DEV",
 		}
-		
+
 		r.Use(JSONMiddlewareWithConfig(&JSONRendererConfig{
 			ServiceConfig:     config,
 			DefaultLogger:     logger,
@@ -44,7 +44,7 @@ func TestJSONRenderer(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		
+
 		// Should be pretty-printed JSON due to development mode
 		body := w.Body.String()
 		assert.Contains(t, body, "Intercepted")
@@ -69,7 +69,7 @@ func TestJSONRenderer(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)

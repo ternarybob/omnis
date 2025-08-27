@@ -47,7 +47,7 @@ func JSONMiddlewareWithConfig(config *JSONRendererConfig) gin.HandlerFunc {
 			config:         config,
 		}
 		c.Writer = interceptor
-		
+
 		// Note: No longer storing JSONRenderer in context
 		// Functionality moved to Gin extensions and automatic interception
 		c.Next()
@@ -67,15 +67,15 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	if w.written {
 		return w.ResponseWriter.Write(data)
 	}
-	
+
 	// Check if this is a JSON response
 	contentType := w.Header().Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
 		return w.ResponseWriter.Write(data)
 	}
-	
+
 	w.written = true
-	
+
 	// Get logger from context if available (set by handlers)
 	var logger arbor.ILogger
 	if loggerInterface, exists := w.context.Get("request_logger"); exists {
@@ -83,12 +83,12 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 			logger = requestLogger
 		}
 	}
-	
+
 	// Fall back to default logger
 	if logger == nil && w.config != nil {
 		logger = w.config.DefaultLogger
 	}
-	
+
 	// Log the response if logger is available
 	if logger != nil {
 		logger.Debug().
@@ -96,29 +96,29 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 			Str("response_size", fmt.Sprintf("%d bytes", len(data))).
 			Msg("JSON response intercepted")
 	}
-	
+
 	// Parse the JSON to potentially enhance it
 	var jsonData interface{}
 	if err := json.Unmarshal(data, &jsonData); err != nil {
 		// If we can't parse it, just pass it through
 		return w.ResponseWriter.Write(data)
 	}
-	
+
 	// For simple c.JSON() calls, we can enhance the response here if desired
 	// For now, just log and pass through with pretty printing if enabled
 	var output []byte
 	var writeErr error
-	
+
 	if w.config != nil && (w.config.EnablePrettyPrint || w.isDevelopmentMode()) {
 		output, writeErr = json.MarshalIndent(jsonData, "", "  ")
 	} else {
 		output, writeErr = json.Marshal(jsonData)
 	}
-	
+
 	if writeErr != nil {
 		return w.ResponseWriter.Write(data) // Fall back to original
 	}
-	
+
 	return w.ResponseWriter.Write(output)
 }
 

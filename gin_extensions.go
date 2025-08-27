@@ -42,7 +42,7 @@ func (ce *ContextExtension) JSON(code int, obj interface{}) {
 	if ce.logger != nil {
 		ce.Context.Set("request_logger", ce.logger)
 	}
-	
+
 	// Use the standard Gin JSON method - will be intercepted by our middleware
 	ce.Context.JSON(code, obj)
 }
@@ -53,7 +53,7 @@ func (ce *ContextExtension) IndentedJSON(code int, obj interface{}) {
 	if ce.logger != nil {
 		ce.Context.Set("request_logger", ce.logger)
 	}
-	
+
 	// Use the standard Gin IndentedJSON method
 	ce.Context.IndentedJSON(code, obj)
 }
@@ -63,7 +63,7 @@ func (ce *ContextExtension) Success(obj interface{}) {
 	ce.JSON(http.StatusOK, obj)
 }
 
-// Created is a convenience method for 201 Created responses  
+// Created is a convenience method for 201 Created responses
 func (ce *ContextExtension) Created(obj interface{}) {
 	ce.JSON(http.StatusCreated, obj)
 }
@@ -91,21 +91,21 @@ func (ce *ContextExtension) InternalServerError(obj interface{}) {
 // Enhanced renders enhanced JSON response with omnis wrapper (full API response)
 func (ce *ContextExtension) Enhanced(code int, obj interface{}) {
 	render := RenderService(ce.Context)
-	
+
 	if ce.logger != nil {
 		render = render.WithLogger(ce.logger)
 	}
-	
+
 	render.AsResult(code, obj)
 }
 
 // Error renders an error response with omnis wrapper
 func (ce *ContextExtension) Error(code int, err interface{}) {
 	render := RenderService(ce.Context)
-	
+
 	if ce.logger != nil {
 		render = render.WithLogger(ce.logger)
 	}
-	
+
 	render.AsError(code, err)
 }
