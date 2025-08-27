@@ -97,7 +97,7 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 
 	// Log the response only if logger is available
 	if logger != nil {
-		logger.Info().
+		logger.Debug().
 			Int("status_code", w.context.Writer.Status()).
 			Str("response_size", fmt.Sprintf("%d bytes", len(data))).
 			Msg("JSON response intercepted")
