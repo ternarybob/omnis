@@ -15,14 +15,6 @@ import (
 	"github.com/ternarybob/arbor"
 )
 
-// min returns the minimum of two integers
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // JSONRendererConfig holds configuration for the JSON renderer middleware
 type JSONRendererConfig struct {
 	ServiceConfig     *ServiceConfig // Service configuration
@@ -78,15 +70,6 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 
 	// Check if this is a JSON response
 	contentType := w.Header().Get("Content-Type")
-	
-	// Debug: Log what we're intercepting
-	if w.config != nil && w.config.DefaultLogger != nil {
-		w.config.DefaultLogger.Debug().
-			Str("content_type", contentType).
-			Str("data_preview", string(data)[:min(100, len(data))]).
-			Msg("JSON interceptor: Checking response")
-	}
-	
 	if !strings.Contains(contentType, "application/json") {
 		return w.ResponseWriter.Write(data)
 	}
