@@ -14,9 +14,9 @@ type ApiResponse struct {
 	Status        int                    `json:"status"`
 	Scope         string                 `json:"scope,omitempty"`
 	CorrelationId string                 `json:"correlationid,omitempty"`
-	Result        interface{}            `json:"result,omitempty"`
+	Log           map[string]interface{} `json:"log,omitempty"`
+	Result        interface{}            `json:"result"`
 	Error         string                 `json:"error,omitempty"`
 	Stack         []string               `json:"stack,omitempty"`
 	Request       map[string]interface{} `json:"request,omitempty"`
-	Log           map[string]string      `json:"log,omitempty"`
 }

@@ -20,6 +20,8 @@ type JSONRendererConfig struct {
 	ServiceConfig     *ServiceConfig // Service configuration
 	DefaultLogger     arbor.ILogger  // Default logger to use if none specified
 	EnablePrettyPrint bool           // Enable pretty printing in development
+	ApiLogLevel       arbor.LogLevel // Minimum log level for capturing logs (default: InfoLevel)
+	ResponseFormat    string         // Response format: "apiresponse" (default) or "standard"
 }
 
 // Note: JSONRenderer struct removed - functionality replaced by:
@@ -71,11 +73,8 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	// Check if this is a JSON response
 	contentType := w.Header().Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
-		// Debug log to see what content types we're skipping
-		fmt.Printf("[DEBUG] Skipping non-JSON content-type: %s\n", contentType)
 		return w.ResponseWriter.Write(data)
 	}
-	fmt.Printf("[DEBUG] Processing JSON response, content-type: %s\n", contentType)
 
 	w.written = true
 
@@ -96,17 +95,13 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 		// Keep usingRequestLogger as false since we're using default
 	}
 
-	// If no logger available at all, skip processing and pass through
-	skipProcessing := logger == nil
-	if skipProcessing {
-		return w.ResponseWriter.Write(data)
+	// Log the response only if logger is available
+	if logger != nil {
+		logger.Info().
+			Int("status_code", w.context.Writer.Status()).
+			Str("response_size", fmt.Sprintf("%d bytes", len(data))).
+			Msg("JSON response intercepted")
 	}
-
-	// Log the response
-	logger.Info().
-		Int("status_code", w.context.Writer.Status()).
-		Str("response_size", fmt.Sprintf("%d bytes", len(data))).
-		Msg("JSON response intercepted")
 
 	// Parse the JSON to potentially enhance it
 	var jsonData interface{}
@@ -163,13 +158,73 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 		}
 	}
 
-	// Add log entry indicating no logs found if no request logger was set
+	// Handle log entries based on request logger status
 	if !usingRequestLogger {
-		apiResponse.Log = map[string]string{
+		// No request logger was set
+		apiResponse.Log = map[string]interface{}{
 			"status": "no logs found - request logger not set",
+		}
+	} else {
+		// Request logger is set - try to capture logs
+		correlationID, exists := w.context.Get(CORRELATION_ID_KEY)
+		if !exists {
+			apiResponse.Log = map[string]interface{}{
+				"status": "request logger set but no correlation ID in context",
+			}
+		} else if correlationIDStr, ok := correlationID.(string); !ok {
+			apiResponse.Log = map[string]interface{}{
+				"status": "request logger set but no correlation ID found",
+			}
+		} else if loggerInterface, exists := w.context.Get(REQUEST_LOGGER); !exists {
+			apiResponse.Log = map[string]interface{}{
+				"status": "request logger set but unable to access memory logs",
+			}
+		} else if requestLogger, ok := loggerInterface.(arbor.ILogger); !ok {
+			apiResponse.Log = map[string]interface{}{
+				"status": "request logger set but unable to access memory logs",
+			}
+		} else {
+			// Use configured log level or default to InfoLevel
+			logLevel := arbor.InfoLevel
+			if w.config != nil && w.config.ApiLogLevel != 0 {
+				logLevel = w.config.ApiLogLevel
+			}
+			if logs, err := requestLogger.GetMemoryLogs(correlationIDStr, logLevel); err != nil || len(logs) == 0 {
+				apiResponse.Log = map[string]interface{}{
+					"status": "request logger set but no logs captured for correlation ID",
+				}
+			} else {
+				// Successfully got logs
+				apiResponse.Log = map[string]interface{}{
+					"count":   len(logs),
+					"entries": logs,
+				}
+			}
 		}
 	}
 
+	// Check response format configuration
+	useStandardFormat := w.config != nil && w.config.ResponseFormat == "standard"
+
+	if useStandardFormat {
+		// Standard JSON format - return original data without ApiResponse wrapping
+		var output []byte
+		var writeErr error
+
+		if w.config != nil && (w.config.EnablePrettyPrint || w.isDevelopmentMode()) {
+			output, writeErr = json.MarshalIndent(jsonData, "", "  ")
+		} else {
+			output, writeErr = json.Marshal(jsonData)
+		}
+
+		if writeErr != nil {
+			return w.ResponseWriter.Write(data) // Fall back to original
+		}
+
+		return w.ResponseWriter.Write(output)
+	}
+
+	// ApiResponse format (default)
 	// Check if this is an error response (typically has "error" field)
 	if errResp, ok := jsonData.(map[string]interface{}); ok {
 		if errMsg, hasError := errResp["error"]; hasError {
