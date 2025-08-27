@@ -7,8 +7,10 @@
 package omnis
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ternarybob/arbor"
@@ -39,10 +41,20 @@ func JSONMiddleware(config *ServiceConfig) gin.HandlerFunc {
 }
 
 // JSONMiddlewareWithConfig creates middleware with full configuration options
+// This middleware intercepts all c.JSON() calls and enhances them with logging
 // Usage: router.Use(omnis.JSONMiddlewareWithConfig(&omnis.JSONRendererConfig{...}))
 func JSONMiddlewareWithConfig(config *JSONRendererConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Store JSON renderer in context for later use
+		// Create custom response writer that intercepts JSON responses
+		originalWriter := c.Writer
+		interceptor := &jsonResponseInterceptor{
+			ResponseWriter: originalWriter,
+			context:        c,
+			config:         config,
+		}
+		c.Writer = interceptor
+		
+		// Store JSON renderer in context for manual use if needed
 		renderer := &JSONRenderer{
 			ctx:           c,
 			config:        config.ServiceConfig,
@@ -52,6 +64,94 @@ func JSONMiddlewareWithConfig(config *JSONRendererConfig) gin.HandlerFunc {
 		c.Set("json_renderer", renderer)
 		c.Next()
 	}
+}
+
+// jsonResponseInterceptor intercepts JSON responses and enhances them
+type jsonResponseInterceptor struct {
+	gin.ResponseWriter
+	context *gin.Context
+	config  *JSONRendererConfig
+	written bool
+}
+
+// Write intercepts the response and processes JSON content
+func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
+	if w.written {
+		return w.ResponseWriter.Write(data)
+	}
+	
+	// Check if this is a JSON response
+	contentType := w.Header().Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		return w.ResponseWriter.Write(data)
+	}
+	
+	w.written = true
+	
+	// Get logger from context if available (set by handlers)
+	var logger arbor.ILogger
+	if loggerInterface, exists := w.context.Get("request_logger"); exists {
+		if requestLogger, ok := loggerInterface.(arbor.ILogger); ok {
+			logger = requestLogger
+		}
+	}
+	
+	// Fall back to default logger
+	if logger == nil && w.config != nil {
+		logger = w.config.DefaultLogger
+	}
+	
+	// Log the response if logger is available
+	if logger != nil {
+		logger.Debug().
+			Int("status_code", w.context.Writer.Status()).
+			Str("response_size", fmt.Sprintf("%d bytes", len(data))).
+			Msg("JSON response intercepted")
+	}
+	
+	// Parse the JSON to potentially enhance it
+	var jsonData interface{}
+	if err := json.Unmarshal(data, &jsonData); err != nil {
+		// If we can't parse it, just pass it through
+		return w.ResponseWriter.Write(data)
+	}
+	
+	// For simple c.JSON() calls, we can enhance the response here if desired
+	// For now, just log and pass through with pretty printing if enabled
+	var output []byte
+	var writeErr error
+	
+	if w.config != nil && (w.config.EnablePrettyPrint || w.isDevelopmentMode()) {
+		output, writeErr = json.MarshalIndent(jsonData, "", "  ")
+	} else {
+		output, writeErr = json.Marshal(jsonData)
+	}
+	
+	if writeErr != nil {
+		return w.ResponseWriter.Write(data) // Fall back to original
+	}
+	
+	return w.ResponseWriter.Write(output)
+}
+
+// WriteHeader captures the status code
+func (w *jsonResponseInterceptor) WriteHeader(statusCode int) {
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+// isDevelopmentMode checks if we're in development mode
+func (w *jsonResponseInterceptor) isDevelopmentMode() bool {
+	if w.config == nil || w.config.ServiceConfig == nil {
+		return true // Default to development if no config
+	}
+	scope := w.config.ServiceConfig.Scope
+	return scope == "" || scope == "DEV" || scope == "DEVELOPMENT"
+}
+
+// WithLogger stores a logger in the context for the JSON interceptor to use
+// Usage: omnis.WithLogger(c, logger) followed by c.JSON(200, data)
+func WithLogger(c *gin.Context, logger arbor.ILogger) {
+	c.Set("request_logger", logger)
 }
 
 // JSONMiddlewareWithDefaults creates middleware with default configuration

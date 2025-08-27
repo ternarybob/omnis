@@ -1,6 +1,9 @@
 # JSON Renderer Middleware Usage Examples
 
-The JSON renderer middleware provides a fluent interface for rendering JSON responses with integrated logging context.
+The JSON renderer middleware provides two approaches for enhanced JSON responses with integrated logging:
+
+1. **Automatic Interception**: Transparently enhances all `c.JSON()` calls
+2. **Fluent Interface**: Explicit control with `omnis.JSON(c).WithLogger(log).Success(data)`
 
 ## Basic Setup
 
@@ -36,8 +39,12 @@ func main() {
             "items": []string{"item1", "item2"},
         }
         
-        // Simple JSON response with logger
-        omnis.JSON(c).WithLogger(log).Simple(200, data)
+        // Approach 1: Automatic interception (recommended)
+        omnis.WithLogger(c, log)
+        c.JSON(200, data)  // Standard Gin - automatically enhanced
+        
+        // Approach 2: Fluent interface (explicit control)
+        // omnis.JSON(c).WithLogger(log).Simple(200, data)
     })
     
     r.Run(":8080")
@@ -84,6 +91,33 @@ func main() {
 ```
 
 ## Usage Patterns
+
+### Automatic Interception (Recommended)
+
+The middleware automatically intercepts all `c.JSON()` calls and enhances them:
+
+```go
+r.GET("/api/users", func(c *gin.Context) {
+    log := arbor.GetLogger().WithPrefix("UsersHandler")
+    
+    // Set logger for automatic logging
+    omnis.WithLogger(c, log)
+    
+    // Standard Gin JSON response - automatically enhanced with:
+    // - Automatic logging of response details
+    // - Pretty printing in development mode
+    // - Response size tracking
+    c.JSON(200, gin.H{
+        "users": []string{"user1", "user2"},
+        "count": 2,
+    })
+})
+
+// No omnis.WithLogger call - uses default logger from middleware
+r.GET("/api/health", func(c *gin.Context) {
+    c.JSON(200, gin.H{"status": "healthy"})  // Still enhanced automatically
+})
+```
 
 ### 1. Simple JSON Responses (No Omnis Wrapper)
 ```go

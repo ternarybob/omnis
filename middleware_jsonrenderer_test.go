@@ -19,6 +19,64 @@ import (
 func TestJSONRenderer(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
+	t.Run("JSON Interception with Standard c.JSON", func(t *testing.T) {
+		r := gin.New()
+		logger := arbor.GetLogger().WithPrefix("TestHandler")
+		config := &ServiceConfig{
+			Name:    "test-service",
+			Version: "1.0.0",
+			Scope:   "DEV",
+		}
+		
+		r.Use(JSONMiddlewareWithConfig(&JSONRendererConfig{
+			ServiceConfig:     config,
+			DefaultLogger:     logger,
+			EnablePrettyPrint: true,
+		}))
+
+		r.GET("/test", func(c *gin.Context) {
+			// Standard Gin c.JSON call - should be intercepted and enhanced
+			c.JSON(http.StatusOK, gin.H{"message": "Intercepted", "status": "success"})
+		})
+
+		req, _ := http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		
+		// Should be pretty-printed JSON due to development mode
+		body := w.Body.String()
+		assert.Contains(t, body, "Intercepted")
+		assert.Contains(t, body, "success")
+		// Check that it's pretty printed (contains newlines and spaces)
+		assert.Contains(t, body, "\n")
+	})
+
+	t.Run("JSON Interception with WithLogger", func(t *testing.T) {
+		r := gin.New()
+		r.Use(JSONMiddlewareWithDefaults())
+
+		r.GET("/test", func(c *gin.Context) {
+			log := arbor.GetLogger().WithPrefix("TestHandler")
+			// Set logger in context, then use standard c.JSON
+			WithLogger(c, log)
+			c.JSON(http.StatusOK, gin.H{"message": "With Logger", "count": 42})
+		})
+
+		req, _ := http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "With Logger", response["message"])
+		assert.Equal(t, float64(42), response["count"]) // JSON unmarshals numbers as float64
+	})
+
 	t.Run("Basic JSON Response", func(t *testing.T) {
 		r := gin.New()
 		r.Use(JSONMiddlewareWithDefaults())
