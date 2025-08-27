@@ -204,7 +204,23 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	}
 
 	// Check response format configuration
+	// First check if debug parameter is present in the request
 	useStandardFormat := w.config != nil && w.config.ResponseFormat == "standard"
+
+	// Check for debug parameter using different methods
+	debugParam := w.context.Query("debug")
+	hasDebugParam := debugParam != ""
+	if !hasDebugParam {
+		// Also check if parameter exists with empty value
+		if _, exists := w.context.GetQuery("debug"); exists {
+			hasDebugParam = true
+		}
+	}
+
+	if hasDebugParam {
+		// Debug parameter present - force debug-response format (detailed API response)
+		useStandardFormat = false
+	}
 
 	if useStandardFormat {
 		// Standard JSON format - return original data without ApiResponse wrapping
