@@ -148,6 +148,29 @@ r.GET("/health", func(c *gin.Context) {
 })
 ```
 
+### Fluent Logger Chaining
+
+For cases where you want to provide a logger with fluent syntax, omnis offers multiple approaches:
+
+```go
+func userHandler(c *gin.Context) {
+    log := arbor.GetLogger().WithPrefix("UserHandler")
+    
+    // Option 1: Direct logger chaining - closest to c.WithLogger(log).JSON() syntax
+    omnis.LoggerChain(c, log).JSON(200, gin.H{"user": "john"})
+    
+    // Option 2: Alternative chain syntax
+    omnis.Chain(c).WithLogger(log).JSON(200, gin.H{"user": "john"})
+    
+    // Option 3: Original C() wrapper syntax
+    omnis.C(c).WithLogger(log).JSON(200, gin.H{"user": "john"})
+    
+    // All syntaxes support convenience methods
+    omnis.LoggerChain(c, log).Success(gin.H{"user": "john"})
+    omnis.Chain(c).WithLogger(log).Created(gin.H{"user": "john"})
+    omnis.C(c).WithLogger(log).BadRequest(gin.H{"error": "invalid input"})
+}
+
 ### Manual Control (Alternative)
 
 For explicit control, you can also use the fluent interface:
