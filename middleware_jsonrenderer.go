@@ -140,8 +140,8 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	if w.config != nil && w.config.ServiceConfig != nil {
 		apiResponse.Version = w.config.ServiceConfig.Version
 		apiResponse.Name = w.config.ServiceConfig.Name
-		apiResponse.Support = w.config.ServiceConfig.Support
 		apiResponse.Scope = w.config.ServiceConfig.Scope
+		// Support field can be set via configuration or left empty
 	}
 
 	// Get correlation ID from context
