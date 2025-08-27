@@ -129,8 +129,8 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	// Wrap the response in APIResponse format
 	apiResponse := ApiResponse{
 		Version: "1.0.0",
+		Build:   "",
 		Name:    "",
-		Support: "",
 		Status:  w.context.Writer.Status(),
 		Scope:   "",
 		Result:  jsonData,

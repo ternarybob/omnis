@@ -1,14 +1,18 @@
+// -----------------------------------------------------------------------
+// Last Modified: Wednesday, 27th August 2025 12:58:20 pm
+// Modified By: Bob McAllan
+// -----------------------------------------------------------------------
+
 package omnis
 
 type ApiResponse struct {
 	Version       string            `json:"version"`
+	Build         string            `json:"build"`
 	Name          string            `json:"name"`
-	Support       string            `json:"support"`
 	Status        int               `json:"status"`
 	Scope         string            `json:"scope"`
 	CorrelationId string            `json:"correlationid"`
 	Err           string            `json:"error,omitempty"`
-	Stack         []string          `json:"stack,omitempty"`
 	Request       map[string]string `json:"request,omitempty"`
 	Log           map[string]string `json:"log,omitempty"`
 	Result        interface{}       `json:"result"`

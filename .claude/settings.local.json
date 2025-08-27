@@ -12,7 +12,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gofmt:*)",
-      "Read(/C:\\Users\\bobmc\\.claude\\commands/**)"
+      "Read(/C:\\Users\\bobmc\\.claude\\commands/**)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

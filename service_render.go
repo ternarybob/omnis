@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// Last Modified: Wednesday, 27th August 2025 8:49:17 am
+// Last Modified: Wednesday, 27th August 2025 12:59:00 pm
 // Modified By: Bob McAllan
 // -----------------------------------------------------------------------
 
@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/ternarybob/arbor"
-	"github.com/ternarybob/funktion"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
@@ -93,7 +92,6 @@ func (s renderservice) AsResultWithError(code int, payload interface{}, err erro
 		goerr := errors.Wrap(err, 3)
 
 		output.Err = goerr.Error()
-		output.Stack = funktion.SplitLines(string(goerr.Stack()))
 
 	}
 
@@ -110,7 +108,6 @@ func (s renderservice) AsError(code int, err interface{}) {
 		goerr := errors.Wrap(err, 3)
 
 		output.Err = goerr.Error()
-		output.Stack = funktion.SplitLines(string(goerr.Stack()))
 
 	}
 
