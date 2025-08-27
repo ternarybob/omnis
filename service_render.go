@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// Last Modified: Wednesday, 27th August 2025 12:59:00 pm
+// Last Modified: Wednesday, 27th August 2025 1:28:44 pm
 // Modified By: Bob McAllan
 // -----------------------------------------------------------------------
 
@@ -8,9 +8,7 @@ package omnis
 import (
 	"encoding/json"
 	"fmt"
-	"runtime"
 	"strings"
-	"time"
 
 	"github.com/ternarybob/arbor"
 
@@ -194,6 +192,7 @@ func (s renderservice) getApiResponse(code int) *ApiResponse {
 
 	return &ApiResponse{
 		Version:       s.getVersion(),
+		Build:         s.getBuild(),
 		Name:          s.getName(),
 		Scope:         s.getScope(),
 		Request:       output,
@@ -215,11 +214,17 @@ func (s *renderservice) getVersion() string {
 		baseVersion = s.config.Version
 	}
 
-	// Add build information: version+build.goversion.timestamp
-	buildTime := time.Now().Format("20060102.150405")
-	goVersion := runtime.Version()
+	return fmt.Sprintf("%s", baseVersion)
+}
 
-	return fmt.Sprintf("%s+build.%s.%s", baseVersion, goVersion, buildTime)
+// Configuration helper methods with defaults
+func (s *renderservice) getBuild() string {
+	baseBuild := ""
+	if s.config != nil && s.config.Build != "" {
+		baseBuild = s.config.Build
+	}
+
+	return fmt.Sprintf("%s", baseBuild)
 }
 
 func (s *renderservice) getName() string {
