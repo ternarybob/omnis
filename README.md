@@ -14,12 +14,13 @@ go get github.com/ternarybob/omnis@latest
 
 ## Features
 
+- **JSON Response Interception**: Automatically enhances all `c.JSON()` calls with logging and formatting
 - **Configurable Render Service**: Structured API responses with correlation ID tracking
 - **Memory Log Integration**: Request-scoped log retrieval using correlation IDs  
 - **Custom Logger Support**: Inject your own arbor logger instances
 - **Middleware Collection**: Headers, static files, correlation ID, error handling, and recovery
 - **Environment-Aware**: Different behavior for DEV/PRD environments
-- **No External Dependencies**: Self-contained configuration (removed satus dependency)
+- **Zero Code Changes**: Transparent enhancements to existing Gin applications
 
 ## Quick Start
 
@@ -46,6 +47,7 @@ func main() {
     
     // Add middleware
     r.Use(omnis.SetCorrelationID())
+    r.Use(omnis.JSONMiddleware(config))  // Automatic JSON enhancement
     r.Use(omnis.SetHeaders(config))
     
     // Use render service
@@ -83,6 +85,80 @@ r.GET("/data", func(c *gin.Context) {
         WithConfig(config).
         WithLogger(logger).
         AsResult(200, data)
+})
+```
+
+## JSON Response Interception
+
+The JSON middleware automatically intercepts and enhances all `c.JSON()` calls in your application:
+
+### Automatic Enhancement
+
+```go
+func main() {
+    r := gin.New()
+    
+    // Configure JSON middleware
+    config := &omnis.ServiceConfig{
+        Name:    "my-api",
+        Version: "1.0.0",
+        Scope:   "DEV",
+    }
+    
+    r.Use(omnis.SetCorrelationID())
+    r.Use(omnis.JSONMiddleware(config))
+    
+    r.GET("/users", func(c *gin.Context) {
+        log := arbor.GetLogger().WithPrefix("UsersHandler")
+        
+        // Set logger for this request
+        omnis.WithLogger(c, log)
+        
+        // Standard Gin JSON response - automatically enhanced with:
+        // ✅ Request/response logging
+        // ✅ Pretty printing in development  
+        // ✅ Response size tracking
+        // ✅ Correlation ID integration
+        c.JSON(200, gin.H{
+            "users": []string{"alice", "bob"},
+            "count": 2,
+        })
+    })
+    
+    r.Run(":8080")
+}
+```
+
+### Advanced Configuration
+
+```go
+// Full configuration with custom logger and settings
+defaultLogger := arbor.GetLogger().WithPrefix("API")
+jsonConfig := &omnis.JSONRendererConfig{
+    ServiceConfig:     config,
+    DefaultLogger:     defaultLogger,
+    EnablePrettyPrint: true,
+}
+
+r.Use(omnis.JSONMiddlewareWithConfig(jsonConfig))
+
+// Now all c.JSON() calls are automatically enhanced
+r.GET("/health", func(c *gin.Context) {
+    c.JSON(200, gin.H{"status": "healthy"})  // Enhanced automatically!
+})
+```
+
+### Manual Control (Alternative)
+
+For explicit control, you can also use the fluent interface:
+
+```go
+r.GET("/data", func(c *gin.Context) {
+    log := arbor.GetLogger().WithPrefix("DataHandler")
+    data := gin.H{"message": "explicit control"}
+    
+    // Fluent interface approach
+    omnis.JSON(c).WithLogger(log).Success(data)
 })
 ```
 
