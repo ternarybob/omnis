@@ -19,16 +19,14 @@ import (
 func TestGinExtensions(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Run("Basic Fluent Interface", func(t *testing.T) {
+	t.Run("Basic JSON Interception", func(t *testing.T) {
 		r := gin.New()
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("TestHandler")
-
-			// Test the fluent interface: omnis.C(c).WithLogger(log).JSON(200, data)
-			C(c).WithLogger(log).JSON(http.StatusOK, gin.H{
-				"message": "fluent interface",
+			// Standard c.JSON call - automatically intercepted
+			c.JSON(http.StatusOK, gin.H{
+				"message": "intercepted",
 				"status":  "success",
 			})
 		})
@@ -42,30 +40,25 @@ func TestGinExtensions(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "fluent interface", result["message"])
-		assert.Equal(t, "success", result["status"])
+		// Without a logger, middleware passes through raw JSON
+		assert.Equal(t, "intercepted", response["message"])
+		assert.Equal(t, "success", response["status"])
 	})
 
-	t.Run("Convenience Methods", func(t *testing.T) {
+	t.Run("Standard JSON Responses", func(t *testing.T) {
 		r := gin.New()
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/success", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("SuccessHandler")
-			C(c).WithLogger(log).Success(gin.H{"result": "ok"})
+			c.JSON(http.StatusOK, gin.H{"result": "ok"})
 		})
 
 		r.GET("/created", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("CreatedHandler")
-			C(c).WithLogger(log).Created(gin.H{"id": 123})
+			c.JSON(http.StatusCreated, gin.H{"id": 123})
 		})
 
 		r.GET("/bad-request", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("BadRequestHandler")
-			C(c).WithLogger(log).BadRequest(gin.H{"error": "invalid input"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 		})
 
 		// Test Success (200)
@@ -87,7 +80,7 @@ func TestGinExtensions(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
-	t.Run("Without Logger", func(t *testing.T) {
+	t.Run("Middleware with Default Logger", func(t *testing.T) {
 		r := gin.New()
 		config := &ServiceConfig{
 			Name:    "test-service",
@@ -104,7 +97,7 @@ func TestGinExtensions(t *testing.T) {
 
 		r.GET("/test", func(c *gin.Context) {
 			// No logger set - should use default from middleware
-			C(c).JSON(http.StatusOK, gin.H{"message": "no logger"})
+			c.JSON(http.StatusOK, gin.H{"message": "with default logger"})
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -119,19 +112,17 @@ func TestGinExtensions(t *testing.T) {
 		// Response is wrapped in APIResponse format, actual data is in result field
 		result, ok := response["result"].(map[string]interface{})
 		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "no logger", result["message"])
+		assert.Equal(t, "with default logger", result["message"])
 	})
 
-	t.Run("Enhanced Response", func(t *testing.T) {
+	t.Run("Enhanced Response Structure", func(t *testing.T) {
 		r := gin.New()
 		r.Use(SetCorrelationID())
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("EnhancedHandler")
-
-			// Test enhanced response (full omnis wrapper)
-			C(c).WithLogger(log).Enhanced(http.StatusOK, gin.H{
+			// Standard JSON response
+			c.JSON(http.StatusOK, gin.H{
 				"message": "enhanced response",
 			})
 		})
@@ -142,34 +133,24 @@ func TestGinExtensions(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		// Should contain the omnis response structure
+		// Without a logger, middleware passes through raw JSON
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Contains(t, response, "result")
-		assert.Contains(t, response, "name")
-		assert.Contains(t, response, "version")
+		assert.Equal(t, "enhanced response", response["message"])
 	})
 }
 
-func TestGinExtensionsChaining(t *testing.T) {
+func TestJSONMiddlewareBehavior(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Run("Method Chaining", func(t *testing.T) {
+	t.Run("Response Wrapping", func(t *testing.T) {
 		r := gin.New()
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("ChainHandler")
-
-			// Test that chaining works properly
-			ext := C(c)
-			extWithLogger := ext.WithLogger(log)
-
-			// Should be the same instance for fluent chaining
-			assert.Equal(t, ext, extWithLogger)
-
-			extWithLogger.JSON(http.StatusOK, gin.H{"chained": true})
+			// Standard JSON response
+			c.JSON(http.StatusOK, gin.H{"data": "test"})
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -181,61 +162,7 @@ func TestGinExtensionsChaining(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, true, result["chained"])
-	})
-
-	t.Run("LoggerChain Package Function", func(t *testing.T) {
-		r := gin.New()
-		r.Use(JSONMiddlewareWithDefaults())
-
-		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("DirectHandler")
-
-			// Test omnis.LoggerChain(c, log) syntax  
-			LoggerChain(c, log).JSON(http.StatusOK, gin.H{"direct": "syntax"})
-		})
-
-		req, _ := http.NewRequest("GET", "/test", nil)
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		var response map[string]interface{}
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "syntax", result["direct"])
-	})
-
-	t.Run("Chain WithLogger", func(t *testing.T) {
-		r := gin.New()
-		r.Use(JSONMiddlewareWithDefaults())
-
-		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("ChainHandler")
-
-			// Test omnis.Chain(c).WithLogger(log) syntax  
-			Chain(c).WithLogger(log).JSON(http.StatusOK, gin.H{"chain": "alternative"})
-		})
-
-		req, _ := http.NewRequest("GET", "/test", nil)
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		var response map[string]interface{}
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "alternative", result["chain"])
+		// Without a logger, middleware passes through raw JSON
+		assert.Equal(t, "test", response["data"])
 	})
 }

@@ -76,26 +76,30 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 
 	w.written = true
 
-	// Get logger from context if available (set by handlers)
+	// Get logger from context if available (set by handlers using omnis.REQUEST_LOGGER)
 	var logger arbor.ILogger
-	if loggerInterface, exists := w.context.Get("request_logger"); exists {
+	if loggerInterface, exists := w.context.Get(REQUEST_LOGGER); exists {
 		if requestLogger, ok := loggerInterface.(arbor.ILogger); ok {
 			logger = requestLogger
 		}
 	}
 
-	// Fall back to default logger
+	// Fall back to default logger if available
 	if logger == nil && w.config != nil {
 		logger = w.config.DefaultLogger
 	}
 
-	// Log the response if logger is available
-	if logger != nil {
-		logger.Debug().
-			Int("status_code", w.context.Writer.Status()).
-			Str("response_size", fmt.Sprintf("%d bytes", len(data))).
-			Msg("JSON response intercepted")
+	// If no logger available at all, skip processing and pass through
+	skipProcessing := logger == nil
+	if skipProcessing {
+		return w.ResponseWriter.Write(data)
 	}
+
+	// Log the response
+	logger.Debug().
+		Int("status_code", w.context.Writer.Status()).
+		Str("response_size", fmt.Sprintf("%d bytes", len(data))).
+		Msg("JSON response intercepted")
 
 	// Parse the JSON to potentially enhance it
 	var jsonData interface{}
@@ -191,7 +195,6 @@ func (w *jsonResponseInterceptor) isDevelopmentMode() bool {
 	scope := w.config.ServiceConfig.Scope
 	return scope == "" || scope == "DEV" || scope == "DEVELOPMENT"
 }
-
 
 // JSONMiddlewareWithDefaults creates middleware with default configuration
 // Usage: router.Use(omnis.JSONMiddlewareWithDefaults())

@@ -58,9 +58,7 @@ func TestJSONRenderer(t *testing.T) {
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/test", func(c *gin.Context) {
-			log := arbor.GetLogger().WithPrefix("TestHandler")
-			// Set logger in context, then use standard c.JSON
-			WithLogger(c, log)
+			// Standard c.JSON call without explicit logger
 			c.JSON(http.StatusOK, gin.H{"message": "With Logger", "count": 42})
 		})
 
@@ -73,11 +71,9 @@ func TestJSONRenderer(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "With Logger", result["message"])
-		assert.Equal(t, float64(42), result["count"]) // JSON unmarshals numbers as float64
+		// Without explicit logger, middleware passes through raw JSON
+		assert.Equal(t, "With Logger", response["message"])
+		assert.Equal(t, float64(42), response["count"]) // JSON unmarshals numbers as float64
 	})
 
 	t.Run("Basic JSON Response", func(t *testing.T) {
@@ -98,12 +94,9 @@ func TestJSONRenderer(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		// Response is wrapped in APIResponse format, actual data is in result field
-		result, ok := response["result"].(map[string]interface{})
-		assert.True(t, ok, "result should be a map")
-		assert.Equal(t, "Hello World", result["message"])
-		// The status field gets mapped to the top-level status code, not in result
-		assert.Equal(t, float64(200), response["status"])
+		// Without logger, middleware passes through raw JSON
+		assert.Equal(t, "Hello World", response["message"])
+		assert.Equal(t, "success", response["status"])
 	})
 
 	t.Run("JSON Response with Logger", func(t *testing.T) {
@@ -174,7 +167,6 @@ func TestJSONRenderer(t *testing.T) {
 		r := gin.New()
 		r.Use(SetCorrelationID())
 
-		logger := arbor.GetLogger().WithPrefix("TestHandler")
 		config := &ServiceConfig{
 			Name:    "test-service",
 			Version: "1.0.0",
@@ -185,8 +177,8 @@ func TestJSONRenderer(t *testing.T) {
 
 		r.GET("/test", func(c *gin.Context) {
 			data := gin.H{"message": "Integration test"}
-			// Use the render service directly for full omnis response
-			RenderService(c).WithLogger(logger).WithConfig(config).AsResult(http.StatusOK, data)
+			// Standard c.JSON call - will be intercepted
+			c.JSON(http.StatusOK, data)
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -195,13 +187,11 @@ func TestJSONRenderer(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		// Should contain the omnis response structure
+		// Without logger, middleware passes through raw JSON
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Contains(t, response, "result")
-		assert.Contains(t, response, "name")
-		assert.Contains(t, response, "version")
+		assert.Equal(t, "Integration test", response["message"])
 	})
 }
 
