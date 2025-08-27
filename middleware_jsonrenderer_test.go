@@ -82,8 +82,8 @@ func TestJSONRenderer(t *testing.T) {
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/test", func(c *gin.Context) {
-			data := gin.H{"message": "Hello World", "status": "success"}
-			JSON(c).Simple(http.StatusOK, data)
+			// Standard c.JSON call - automatically intercepted
+			c.JSON(http.StatusOK, gin.H{"message": "Hello World", "status": "success"})
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -118,7 +118,7 @@ func TestJSONRenderer(t *testing.T) {
 
 		r.GET("/test", func(c *gin.Context) {
 			data := gin.H{"message": "Test with logger"}
-			JSON(c).Simple(http.StatusOK, data)
+			c.JSON(http.StatusOK, data)
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -133,15 +133,15 @@ func TestJSONRenderer(t *testing.T) {
 		r.Use(JSONMiddlewareWithDefaults())
 
 		r.GET("/success", func(c *gin.Context) {
-			JSON(c).Success(gin.H{"result": "ok"})
+			c.JSON(http.StatusOK, gin.H{"result": "ok"})
 		})
 
 		r.GET("/bad-request", func(c *gin.Context) {
-			JSON(c).BadRequest(gin.H{"error": "invalid input"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 		})
 
 		r.GET("/not-found", func(c *gin.Context) {
-			JSON(c).NotFound(gin.H{"error": "resource not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "resource not found"})
 		})
 
 		// Test Success
@@ -178,7 +178,8 @@ func TestJSONRenderer(t *testing.T) {
 
 		r.GET("/test", func(c *gin.Context) {
 			data := gin.H{"message": "Integration test"}
-			JSON(c).WithLogger(logger).Response(http.StatusOK, data)
+			// Use the render service directly for full omnis response
+			RenderService(c).WithLogger(logger).WithConfig(config).AsResult(http.StatusOK, data)
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
@@ -205,7 +206,7 @@ func TestJSONRendererWithoutMiddleware(t *testing.T) {
 
 		r.GET("/test", func(c *gin.Context) {
 			data := gin.H{"message": "Direct usage"}
-			JSON(c).Simple(http.StatusOK, data)
+			c.JSON(http.StatusOK, data)
 		})
 
 		req, _ := http.NewRequest("GET", "/test", nil)
