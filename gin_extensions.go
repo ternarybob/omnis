@@ -13,6 +13,33 @@ import (
 	"github.com/ternarybob/arbor"
 )
 
+// ExtendedContext extends gin.Context with additional methods
+type ExtendedContext struct {
+	*gin.Context
+}
+
+// LoggerChain provides fluent logger chaining for gin.Context
+// Usage: omnis.LoggerChain(c, log).JSON(200, data)
+// Alternative: omnis.Chain(c).WithLogger(log).JSON(200, data)
+func LoggerChain(c *gin.Context, logger arbor.ILogger) *ContextExtension {
+	// Set the logger in context for the interceptor to use
+	c.Set("request_logger", logger)
+
+	return &ContextExtension{
+		Context: c,
+		logger:  logger,
+	}
+}
+
+// Chain provides an alternative entry point for fluent chaining
+// Usage: omnis.Chain(c).WithLogger(log).JSON(200, data)
+func Chain(c *gin.Context) *ContextExtension {
+	return &ContextExtension{
+		Context: c,
+		logger:  nil,
+	}
+}
+
 // ContextExtension wraps gin.Context to provide enhanced methods
 type ContextExtension struct {
 	*gin.Context

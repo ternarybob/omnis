@@ -186,4 +186,56 @@ func TestGinExtensionsChaining(t *testing.T) {
 		assert.True(t, ok, "result should be a map")
 		assert.Equal(t, true, result["chained"])
 	})
+
+	t.Run("LoggerChain Package Function", func(t *testing.T) {
+		r := gin.New()
+		r.Use(JSONMiddlewareWithDefaults())
+
+		r.GET("/test", func(c *gin.Context) {
+			log := arbor.GetLogger().WithPrefix("DirectHandler")
+
+			// Test omnis.LoggerChain(c, log) syntax  
+			LoggerChain(c, log).JSON(http.StatusOK, gin.H{"direct": "syntax"})
+		})
+
+		req, _ := http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "syntax", result["direct"])
+	})
+
+	t.Run("Chain WithLogger", func(t *testing.T) {
+		r := gin.New()
+		r.Use(JSONMiddlewareWithDefaults())
+
+		r.GET("/test", func(c *gin.Context) {
+			log := arbor.GetLogger().WithPrefix("ChainHandler")
+
+			// Test omnis.Chain(c).WithLogger(log) syntax  
+			Chain(c).WithLogger(log).JSON(http.StatusOK, gin.H{"chain": "alternative"})
+		})
+
+		req, _ := http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "alternative", result["chain"])
+	})
 }
