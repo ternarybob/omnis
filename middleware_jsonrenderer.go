@@ -139,6 +139,7 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 	// Add service config if available
 	if w.config != nil && w.config.ServiceConfig != nil {
 		apiResponse.Version = w.config.ServiceConfig.Version
+		apiResponse.Build = w.config.ServiceConfig.Build
 		apiResponse.Name = w.config.ServiceConfig.Name
 		apiResponse.Scope = w.config.ServiceConfig.Scope
 		// Support field can be set via configuration or left empty
