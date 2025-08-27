@@ -104,15 +104,70 @@ func (w *jsonResponseInterceptor) Write(data []byte) (int, error) {
 		return w.ResponseWriter.Write(data)
 	}
 
-	// For simple c.JSON() calls, we can enhance the response here if desired
-	// For now, just log and pass through with pretty printing if enabled
+	// Check if this is already an APIResponse (to avoid double-wrapping)
+	if apiResp, ok := jsonData.(map[string]interface{}); ok {
+		if _, hasVersion := apiResp["version"]; hasVersion {
+			if _, hasName := apiResp["name"]; hasName {
+				if _, hasResult := apiResp["result"]; hasResult {
+					// Already wrapped, just pretty print if needed
+					var output []byte
+					var writeErr error
+					if w.config != nil && (w.config.EnablePrettyPrint || w.isDevelopmentMode()) {
+						output, writeErr = json.MarshalIndent(jsonData, "", "  ")
+					} else {
+						output, writeErr = json.Marshal(jsonData)
+					}
+					if writeErr != nil {
+						return w.ResponseWriter.Write(data)
+					}
+					return w.ResponseWriter.Write(output)
+				}
+			}
+		}
+	}
+
+	// Wrap the response in APIResponse format
+	apiResponse := ApiResponse{
+		Version: "1.0.0",
+		Name:    "",
+		Support: "",
+		Status:  w.context.Writer.Status(),
+		Scope:   "",
+		Result:  jsonData,
+	}
+
+	// Add service config if available
+	if w.config != nil && w.config.ServiceConfig != nil {
+		apiResponse.Version = w.config.ServiceConfig.Version
+		apiResponse.Name = w.config.ServiceConfig.Name
+		apiResponse.Support = w.config.ServiceConfig.Support
+		apiResponse.Scope = w.config.ServiceConfig.Scope
+	}
+
+	// Get correlation ID from context
+	if correlationID, exists := w.context.Get("correlation-id"); exists {
+		if id, ok := correlationID.(string); ok {
+			apiResponse.CorrelationId = id
+		}
+	}
+
+	// Check if this is an error response (typically has "error" field)
+	if errResp, ok := jsonData.(map[string]interface{}); ok {
+		if errMsg, hasError := errResp["error"]; hasError {
+			// Move error to the error field and clear result
+			apiResponse.Err = fmt.Sprintf("%v", errMsg)
+			apiResponse.Result = nil
+		}
+	}
+
+	// Marshal the wrapped response
 	var output []byte
 	var writeErr error
 
 	if w.config != nil && (w.config.EnablePrettyPrint || w.isDevelopmentMode()) {
-		output, writeErr = json.MarshalIndent(jsonData, "", "  ")
+		output, writeErr = json.MarshalIndent(apiResponse, "", "  ")
 	} else {
-		output, writeErr = json.Marshal(jsonData)
+		output, writeErr = json.Marshal(apiResponse)
 	}
 
 	if writeErr != nil {
