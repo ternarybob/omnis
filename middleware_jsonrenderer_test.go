@@ -73,8 +73,11 @@ func TestJSONRenderer(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, "With Logger", response["message"])
-		assert.Equal(t, float64(42), response["count"]) // JSON unmarshals numbers as float64
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "With Logger", result["message"])
+		assert.Equal(t, float64(42), result["count"]) // JSON unmarshals numbers as float64
 	})
 
 	t.Run("Basic JSON Response", func(t *testing.T) {
@@ -95,8 +98,12 @@ func TestJSONRenderer(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, "Hello World", response["message"])
-		assert.Equal(t, "success", response["status"])
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "Hello World", result["message"])
+		// The status field gets mapped to the top-level status code, not in result
+		assert.Equal(t, float64(200), response["status"])
 	})
 
 	t.Run("JSON Response with Logger", func(t *testing.T) {

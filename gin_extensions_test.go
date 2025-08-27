@@ -42,8 +42,11 @@ func TestGinExtensions(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, "fluent interface", response["message"])
-		assert.Equal(t, "success", response["status"])
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "fluent interface", result["message"])
+		assert.Equal(t, "success", result["status"])
 	})
 
 	t.Run("Convenience Methods", func(t *testing.T) {
@@ -113,7 +116,10 @@ func TestGinExtensions(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, "no logger", response["message"])
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, "no logger", result["message"])
 	})
 
 	t.Run("Enhanced Response", func(t *testing.T) {
@@ -175,6 +181,9 @@ func TestGinExtensionsChaining(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, true, response["chained"])
+		// Response is wrapped in APIResponse format, actual data is in result field
+		result, ok := response["result"].(map[string]interface{})
+		assert.True(t, ok, "result should be a map")
+		assert.Equal(t, true, result["chained"])
 	})
 }
