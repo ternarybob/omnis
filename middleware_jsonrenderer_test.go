@@ -22,7 +22,7 @@ func TestJSONRenderer(t *testing.T) {
 	t.Run("Basic JSON Response", func(t *testing.T) {
 		r := gin.New()
 		r.Use(JSONMiddlewareWithDefaults())
-		
+
 		r.GET("/test", func(c *gin.Context) {
 			data := gin.H{"message": "Hello World", "status": "success"}
 			JSON(c).Simple(http.StatusOK, data)
@@ -33,7 +33,7 @@ func TestJSONRenderer(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
@@ -44,14 +44,14 @@ func TestJSONRenderer(t *testing.T) {
 	t.Run("JSON Response with Logger", func(t *testing.T) {
 		r := gin.New()
 		r.Use(SetCorrelationID())
-		
+
 		logger := arbor.GetLogger().WithPrefix("TestHandler")
 		config := &ServiceConfig{
 			Name:    "test-service",
 			Version: "1.0.0",
 			Scope:   "TEST",
 		}
-		
+
 		r.Use(JSONMiddlewareWithConfig(&JSONRendererConfig{
 			ServiceConfig:     config,
 			DefaultLogger:     logger,
@@ -115,7 +115,7 @@ func TestJSONRenderer(t *testing.T) {
 			Version: "1.0.0",
 			Scope:   "TEST",
 		}
-		
+
 		r.Use(JSONMiddleware(config))
 
 		r.GET("/test", func(c *gin.Context) {
@@ -128,7 +128,7 @@ func TestJSONRenderer(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		
+
 		// Should contain the omnis response structure
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
@@ -155,7 +155,7 @@ func TestJSONRendererWithoutMiddleware(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)

@@ -86,6 +86,79 @@ r.GET("/data", func(c *gin.Context) {
 })
 ```
 
+### Advanced Configuration Examples
+
+#### Complete Service Setup
+```go
+func setupAPI() *gin.Engine {
+    r := gin.New()
+    
+    // Service configuration
+    config := &omnis.ServiceConfig{
+        Name:    "pexa-mock-api",
+        Version: "0.0.2",
+        Support: "support@pexa.com",
+        Scope:   "DEV",
+    }
+    
+    // Configure logger with memory storage for correlation
+    logger := arbor.Logger().
+        WithPrefix("API").
+        WithConsoleWriter(models.WriterConfiguration{
+            Type: models.LogWriterTypeConsole,
+        }).
+        WithMemoryWriter(models.WriterConfiguration{
+            Type: models.LogWriterTypeMemory,
+        })
+    
+    // Add middleware stack
+    r.Use(omnis.SetCorrelationID())
+    r.Use(omnis.SetHeaders(config))
+    r.Use(omnis.StaticRequests(config, []string{"assets/", "favicon.ico"}))
+    
+    return r
+}
+```
+
+#### Multiple Response Types
+```go
+// Success responses
+r.GET("/users", func(c *gin.Context) {
+    users := []gin.H{
+        {"id": 1, "name": "John Doe"},
+        {"id": 2, "name": "Jane Smith"},
+    }
+    
+    omnis.RenderService(c).
+        WithConfig(config).
+        WithLogger(logger).
+        AsResult(200, users)
+})
+
+// Error responses with stack traces (DEV mode only)
+r.GET("/error-demo", func(c *gin.Context) {
+    err := errors.New("demonstration error")
+    
+    omnis.RenderService(c).
+        WithConfig(config).
+        WithLogger(logger).
+        AsResultWithError(500, nil, err)
+})
+
+// Model responses (merge into existing struct)
+r.GET("/profile", func(c *gin.Context) {
+    profile := &UserProfile{
+        ID:   123,
+        Name: "John Doe",
+    }
+    
+    omnis.RenderService(c).
+        WithConfig(config).
+        WithLogger(logger).
+        AsModel(200, profile)
+})
+```
+
 ## Examples
 
 ### Error Handling with Stack Traces (DEV mode)
@@ -100,27 +173,55 @@ r.GET("/error", func(c *gin.Context) {
 })
 ```
 
-### API Response Structure
+### API Response Formats
 
-All responses include metadata and request correlation:
+#### Standard API Response (with correlation tracking)
+All responses include metadata, correlation tracking, and memory logs:
 
 ```json
 {
-  "version": "1.0.0",
-  "name": "my-api", 
-  "support": "support@mycompany.com",
+  "result": {
+    "users": ["alice", "bob"]
+  },
+  "name": "pexa-mock-api",
+  "version": "0.0.2+build.go1.24.20250827.105800",
+  "support": "support@pexa.com",
   "status": 200,
   "scope": "DEV",
   "correlationid": "550e8400-e29b-41d4-a716-446655440000",
   "request": {
-    "url": "/users",
-    "method": "GET"
+    "url": "/users"
   },
   "log": {
-    "001": "INF|10:30:45.123|my-api|Processing request",
-    "002": "INF|10:30:45.124|my-api|Found 2 users"
+    "001": "INF|10:30:45.123|API|Processing request started",
+    "002": "DBG|10:30:45.124|API|Found 2 users",
+    "003": "INF|10:30:45.125|API|Request completed"
+  }
+}
+```
+
+#### Error Response with Stack Trace (DEV mode only)
+```json
+{
+  "result": null,
+  "name": "pexa-mock-api",
+  "version": "0.0.2+build.go1.24.20250827.105800",
+  "status": 500,
+  "scope": "DEV",
+  "correlationid": "550e8400-e29b-41d4-a716-446655440000",
+  "error": "demonstration error",
+  "stack": [
+    "main.errorHandler()",
+    "  /app/handlers.go:45",
+    "github.com/gin-gonic/gin.(*Context).Next()",
+    "  /go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:174"
+  ],
+  "request": {
+    "url": "/error-demo"
   },
-  "result": ["alice", "bob"]
+  "log": {
+    "001": "ERR|10:30:50.123|API|Error occurred: demonstration error"
+  }
 }
 ```
 
@@ -183,6 +284,86 @@ r.Use(omnis.StaticRequests(config, []string{"assets/", "favicon.ico"}))
 // - Error handler middleware
 // - Recovery middleware  
 // - CORS headers middleware
+```
+
+## Migration Guide
+
+### Updating Existing Applications
+
+To integrate omnis into existing Gin applications:
+
+#### 1. Update main.go setup
+```go
+// Before: Standard Gin setup
+func main() {
+    r := gin.New()
+    
+    r.GET("/users", func(c *gin.Context) {
+        users := getUserList()
+        c.JSON(http.StatusOK, users)
+    })
+}
+
+// After: With omnis integration
+func main() {
+    r := gin.New()
+    
+    config := &omnis.ServiceConfig{
+        Name:    "my-api",
+        Version: "1.0.0",
+        Support: "support@company.com",
+        Scope:   "DEV",
+    }
+    
+    logger := arbor.Logger().WithPrefix("API")
+    
+    // Add omnis middleware
+    r.Use(omnis.SetCorrelationID())
+    r.Use(omnis.SetHeaders(config))
+    
+    r.GET("/users", func(c *gin.Context) {
+        users := getUserList()
+        
+        // Enhanced response with correlation tracking
+        omnis.RenderService(c).
+            WithConfig(config).
+            WithLogger(logger).
+            AsResult(200, users)
+    })
+}
+```
+
+#### 2. Update Handler Methods
+```go
+// Before: Direct JSON responses
+func UserHandler(c *gin.Context) {
+    userInfo := getUserFromToken(c)
+    if userInfo == nil {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+    c.JSON(http.StatusOK, userInfo)
+}
+
+// After: With omnis structured responses
+func UserHandler(c *gin.Context) {
+    logger := arbor.Logger().WithPrefix("UserHandler")
+    config := getServiceConfig() // Your config source
+    
+    userInfo := getUserFromToken(c)
+    if userInfo == nil {
+        omnis.RenderService(c).
+            WithConfig(config).
+            WithLogger(logger).
+            AsError(401, errors.New("unauthorized"))
+        return
+    }
+    
+    omnis.RenderService(c).
+        WithConfig(config).
+        WithLogger(logger).
+        AsResult(200, userInfo)
+}
 ```
 
 ## Related Libraries

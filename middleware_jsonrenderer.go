@@ -16,9 +16,9 @@ import (
 
 // JSONRendererConfig holds configuration for the JSON renderer middleware
 type JSONRendererConfig struct {
-	ServiceConfig   *ServiceConfig  // Service configuration
-	DefaultLogger   arbor.ILogger   // Default logger to use if none specified
-	EnablePrettyPrint bool          // Enable pretty printing in development
+	ServiceConfig     *ServiceConfig // Service configuration
+	DefaultLogger     arbor.ILogger  // Default logger to use if none specified
+	EnablePrettyPrint bool           // Enable pretty printing in development
 }
 
 // JSONRenderer provides a fluent interface for rendering JSON responses with logging
@@ -69,7 +69,7 @@ func JSON(c *gin.Context) *JSONRenderer {
 			return jr
 		}
 	}
-	
+
 	// Create new renderer if not in middleware
 	return &JSONRenderer{
 		ctx: c,
@@ -92,45 +92,45 @@ func (j *JSONRenderer) WithConfig(config *ServiceConfig) *JSONRenderer {
 // This integrates with the existing omnis RenderService for consistent formatting
 func (j *JSONRenderer) Response(code int, data interface{}) {
 	render := RenderService(j.ctx)
-	
+
 	if j.logger != nil {
 		render = render.WithLogger(j.logger)
 	}
-	
+
 	if j.config != nil {
 		render = render.WithConfig(j.config)
 	}
-	
+
 	render.AsResult(code, data)
 }
 
 // Error renders an error JSON response
 func (j *JSONRenderer) Error(code int, err interface{}) {
 	render := RenderService(j.ctx)
-	
+
 	if j.logger != nil {
 		render = render.WithLogger(j.logger)
 	}
-	
+
 	if j.config != nil {
 		render = render.WithConfig(j.config)
 	}
-	
+
 	render.AsError(code, err)
 }
 
 // ResultWithError renders a JSON response with both data and error information
 func (j *JSONRenderer) ResultWithError(code int, data interface{}, err error) {
 	render := RenderService(j.ctx)
-	
+
 	if j.logger != nil {
 		render = render.WithLogger(j.logger)
 	}
-	
+
 	if j.config != nil {
 		render = render.WithConfig(j.config)
 	}
-	
+
 	render.AsResultWithError(code, data, err)
 }
 
@@ -145,7 +145,7 @@ func (j *JSONRenderer) Simple(code int, data interface{}) {
 			Str("response_data", fmt.Sprintf("%+v", data)).
 			Msg("Simple JSON response")
 	}
-	
+
 	// Use pretty print if enabled and in development scope
 	if j.enablePretty || j.isDevelopmentScope() {
 		j.ctx.IndentedJSON(code, data)
@@ -164,7 +164,7 @@ func (j *JSONRenderer) IndentedSimple(code int, data interface{}) {
 			Str("response_data", fmt.Sprintf("%+v", data)).
 			Msg("Indented JSON response")
 	}
-	
+
 	j.ctx.IndentedJSON(code, data)
 }
 
